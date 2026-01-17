@@ -70,7 +70,7 @@ export default function EqualizerPanel({ isOpen, onClose }: EqualizerPanelProps)
                     {BANDS.map((band, i) => (
                         <div key={band.label} className="flex-1 flex flex-col items-center group">
                             <div className="text-[10px] font-mono mb-2 text-[var(--primary-dynamic)] font-black">
-                                {eqGains[i] > 0 ? `+${eqGains[i]}` : eqGains[i]}
+                                {eqGains[i] > 0 ? `+${eqGains[i].toFixed(1)}` : eqGains[i].toFixed(1)}
                             </div>
 
                             <div className="relative flex-1 w-full bg-white/5 rounded-2xl flex flex-col items-center py-4">
@@ -79,9 +79,9 @@ export default function EqualizerPanel({ isOpen, onClose }: EqualizerPanelProps)
 
                                 {/* Fill Track */}
                                 <div
-                                    className="absolute bottom-6 w-1 bg-gradient-to-t from-[var(--primary-dynamic)] to-cyan-400 rounded-full transition-all duration-300 shadow-[0_0_15px_rgba(var(--primary-dynamic-rgb),0.3)]"
+                                    className="absolute bottom-6 w-1 bg-gradient-to-t from-[var(--primary-dynamic)] to-cyan-400 rounded-full shadow-[0_0_15px_rgba(var(--primary-dynamic-rgb),0.3)]"
                                     style={{
-                                        height: `${((eqGains[i] + 12) / 24) * 100}%`,
+                                        height: `${((eqGains[i] + 20) / 40) * 100}%`,
                                         maxHeight: 'calc(100% - 3rem)'
                                     }}
                                 />
@@ -89,19 +89,19 @@ export default function EqualizerPanel({ isOpen, onClose }: EqualizerPanelProps)
                                 {/* THE INPUT - Standard horizontal rotated for cross-browser stability */}
                                 <input
                                     type="range"
-                                    min="-12"
-                                    max="12"
-                                    step="1"
+                                    min="-20"
+                                    max="20"
+                                    step="0.1"
                                     value={eqGains[i]}
-                                    onChange={(e) => setEqGain(i, parseInt(e.target.value))}
+                                    onInput={(e) => setEqGain(i, parseFloat(e.currentTarget.value))}
                                     className="absolute inset-0 w-[200px] h-full cursor-pointer z-10 opacity-0 -rotate-90 origin-center touch-none"
                                 />
 
                                 {/* Handle Visual */}
                                 <div
-                                    className="absolute w-5 h-5 bg-white rounded-full shadow-xl border-2 border-[var(--primary-dynamic)] pointer-events-none transition-all duration-300 z-20"
+                                    className="absolute w-5 h-5 bg-white rounded-full shadow-xl border-2 border-[var(--primary-dynamic)] pointer-events-none z-20"
                                     style={{
-                                        bottom: `calc(${((eqGains[i] + 12) / 24) * 100}% + 1.2rem)`,
+                                        bottom: `calc(${((eqGains[i] + 20) / 40) * 100}% + 1.2rem)`,
                                         transform: 'translateY(50%)'
                                     }}
                                 />
