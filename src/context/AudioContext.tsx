@@ -460,15 +460,28 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
                 if (lastTriggered !== todayStr) {
                     sessionStorage.setItem(`alarm_last_${activeAlarm.id}`, todayStr);
 
-                    // Show notification
+                    // PWA/Browser Limitation Note:
+                    // Audio autosplay and TTS are often blocked if the user hasn't interacted with the document recently
+                    // or if the app is in the background (mobile OS puts tabs to sleep).
+                    // Native Push Notifications are needed for reliable background wake-up on mobile.
+
                     if ('Notification' in window && Notification.permission === 'granted') {
-                        new Notification('Radio Alarm', {
-                            body: `Starting ${activeAlarm.station.name}`,
-                            icon: activeAlarm.station.favicon || '/favicon.ico'
+                        // This notification might wake up the screen
+                        const n = new Notification('Radio Alarm', {
+                            body: `Es hora de: ${activeAlarm.station.name}`,
+                            icon: activeAlarm.station.favicon || '/favicon.ico',
+                            tag: 'alarm-trigger',
+                            requireInteraction: true // Keep it visible
                         });
+
+                        // Try to focus window if possible
+                        n.onclick = () => {
+                            window.focus();
+                        };
                     }
 
                     // Trigger Smart or Standard
+                    // Note: This will only work if the tab is active/foreground in most mobile browsers
                     if (activeAlarm.smart) {
                         runSmartAlarm(activeAlarm.station, activeAlarm.newsSource);
                     } else {
@@ -478,7 +491,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
             }
         };
 
-        const interval = setInterval(checkAlarms, 10000); // Check every 10s
+        const interval = setInterval(checkAlarms, 5000); // Check every 5s for better precision
         return () => clearInterval(interval);
     }, [playStation]);
 
