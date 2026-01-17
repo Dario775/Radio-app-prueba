@@ -68,3 +68,21 @@ export async function getStations(options: FetchStationsOptions): Promise<RadioS
 
     return fetchWithFallback<RadioStation[]>('/json/stations/search', params);
 }
+
+export async function getStationsByCountry(country: string, limit: number = 100): Promise<RadioStation[]> {
+    const params: Record<string, string> = {
+        limit: limit.toString(),
+        order: 'clickcount',
+        reverse: 'true',
+        hidebroken: 'true'
+    };
+    return fetchWithFallback<RadioStation[]>(`/json/stations/bycountry/${encodeURIComponent(country)}`, params);
+}
+
+export async function getCountries(): Promise<{ name: string; stationcount: number }[]> {
+    return fetchWithFallback<{ name: string; stationcount: number }[]>('/json/countries');
+}
+
+export async function getStates(country: string): Promise<{ name: string; stationcount: number }[]> {
+    return fetchWithFallback<{ name: string; stationcount: number }[]>(`/json/states/${encodeURIComponent(country)}`);
+}

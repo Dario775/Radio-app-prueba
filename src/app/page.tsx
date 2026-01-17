@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { searchStations, getRandomStation, getStationsByLocation, getStationDetails } from '@/actions/radio';
+import { searchStations, getRandomStation, getStationsByLocation, getStationDetails, getAllCountries, getStatesForCountry } from '@/actions/radio';
 import SearchBar from '@/components/SearchBar';
 import StationCard from '@/components/StationCard';
 import GenreSelector from '@/components/GenreSelector';
@@ -66,6 +66,34 @@ export function DiscoverView({
   topStations,
   playStation
 }: DiscoverViewProps) {
+  const [countries, setCountries] = useState<{ name: string, stationcount: number }[]>([]);
+  const [states, setStates] = useState<{ name: string, stationcount: number }[]>([]);
+  const [selectedCountry, setSelectedCountry] = useState('Argentina');
+  const [selectedState, setSelectedState] = useState('');
+
+  useEffect(() => {
+    getAllCountries().then(setCountries);
+    getStatesForCountry('Argentina').then(setStates);
+  }, []);
+
+  const handleCountryChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const country = e.target.value;
+    setSelectedCountry(country);
+    setSelectedState('');
+    handleSearch(`location:${country}`);
+
+    try {
+      const states = await getStatesForCountry(country);
+      setStates(states);
+    } catch (e) { setStates([]); }
+  };
+
+  const handleStateChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const state = e.target.value;
+    setSelectedState(state);
+    handleSearch(`location:${selectedCountry}:${state}`);
+  };
+
   return (
     <div className="flex flex-col">
       {/* Header */}
@@ -114,6 +142,50 @@ export function DiscoverView({
           activeGenre={activeCategory}
           onGenreChange={handleCategoryChange}
         />
+
+        {/* Location Filter */}
+        <div className="max-w-4xl mx-auto px-4 mt-6 mb-2">
+          <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)] mb-3 flex items-center gap-2">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              Explorar por Ubicación
+            </h3>
+            <div className="flex gap-3">
+              <div className="relative flex-1">
+                <select
+                  value={selectedCountry}
+                  onChange={handleCountryChange}
+                  className="w-full appearance-none bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[var(--primary)] transition-colors"
+                >
+                  <option value="" className="bg-black">Seleccionar País</option>
+                  {countries.map(c => (
+                    <option key={c.name} value={c.name} className="bg-black text-white">{c.name} ({c.stationcount})</option>
+                  ))}
+                </select>
+                <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-white/50">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} /></svg>
+                </div>
+              </div>
+
+              <div className="relative flex-1">
+                <select
+                  value={selectedState}
+                  onChange={handleStateChange}
+                  disabled={!selectedCountry || states.length === 0}
+                  className="w-full appearance-none bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[var(--primary)] transition-colors disabled:opacity-50"
+                >
+                  <option value="" className="bg-black">Todas las Provincias/Estados</option>
+                  {states.map(s => (
+                    <option key={s.name} value={s.name} className="bg-black text-white">{s.name} ({s.stationcount})</option>
+                  ))}
+                </select>
+                <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-white/50">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} /></svg>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Content */}
@@ -241,7 +313,15 @@ export default function Home() {
 
     startTransition(async () => {
       try {
-        const result = await searchStations(query, tag);
+        let result;
+        if (query.startsWith('location:')) {
+          const parts = query.replace('location:', '').split(':');
+          const country = parts[0];
+          const state = parts[1] || undefined;
+          result = await getStationsByLocation(undefined, state, country);
+        } else {
+          result = await searchStations(query, tag);
+        }
         setStations(result);
       } catch (err) {
         console.error('Error fetching stations:', err);

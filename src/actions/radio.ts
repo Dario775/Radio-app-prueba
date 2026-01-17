@@ -92,21 +92,59 @@ export async function getRandomStation(): Promise<RadioStation | null> {
     }
 }
 
-export async function getStationsByLocation(countryCode?: string, state?: string): Promise<RadioStation[]> {
+export async function getStationsByLocation(countryCode?: string, state?: string, country?: string): Promise<RadioStation[]> {
     try {
         let options: any = {
-            limit: 20,
+            limit: 50,
             order: 'clickcount',
             reverse: true
         };
 
         if (countryCode) options.countrycode = countryCode;
         if (state) options.state = state;
+        // If we have full country name, prefer using the bycountry endpoint or search if combined with state
+        if (country && !state) {
+            const { getStationsByCountry } = await import('@/lib/radio-api');
+            return await getStationsByCountry(country, 50);
+        }
 
         const results = await getStations(options);
         return results.filter(s => s.url_resolved && s.lastcheckok === 1);
     } catch (error) {
         console.error('Error fetching stations by location:', error);
+        return [];
+    }
+}
+
+export async function getAllCountries() {
+    try {
+        const { getCountries } = await import('@/lib/radio-api');
+        const countries = await getCountries();
+        // Return only countries with significant station count to reduce noise
+        return countries.filter(c => c.stationcount > 10).sort((a, b) => b.stationcount - a.stationcount);
+    } catch (error) {
+        return [];
+    }
+}
+
+export async function getStatesForCountry(country: string) {
+    try {
+        const { getStates } = await import('@/lib/radio-api');
+        const states = await getStates(country);
+        return states.filter(s => s.stationcount > 0).sort((a, b) => a.name.localeCompare(b.name));
+    } catch (error) {
+        return [];
+    }
+}
+
+export async function getArgentineStations(limit: number = 50): Promise<RadioStation[]> {
+    try {
+        // We import the new function we just added to lib/radio-api
+        const { getStationsByCountry } = await import('@/lib/radio-api');
+        const results = await getStationsByCountry('Argentina', limit);
+        return results.filter(s => s.url_resolved && s.lastcheckok === 1);
+    } catch (error) {
+        console.error('Error fetching Argentine stations:', error);
         return [];
     }
 }
