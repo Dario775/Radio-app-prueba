@@ -28,6 +28,17 @@ const BANDS = [
 export default function EqualizerPanel({ isOpen, onClose }: EqualizerPanelProps) {
     const { eqGains, setEqGain } = useAudio();
 
+    React.useEffect(() => {
+        if (isOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [isOpen]);
+
     if (!isOpen) return null;
 
     const applyPreset = (gains: number[]) => {
@@ -35,7 +46,7 @@ export default function EqualizerPanel({ isOpen, onClose }: EqualizerPanelProps)
     };
 
     return (
-        <div className="fixed inset-0 z-[110] flex items-end justify-center sm:items-center p-4">
+        <div className="fixed inset-0 z-[110] flex items-end justify-center sm:items-center p-4 touch-none">
             <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={onClose} />
 
             <div className="relative w-full max-w-lg glass-dark border border-white/10 rounded-[2.5rem] p-8 shadow-2xl animate-panel-up">
@@ -83,7 +94,7 @@ export default function EqualizerPanel({ isOpen, onClose }: EqualizerPanelProps)
                                     step="1"
                                     value={eqGains[i]}
                                     onChange={(e) => setEqGain(i, parseInt(e.target.value))}
-                                    className="absolute inset-0 w-[200px] h-full cursor-pointer z-10 opacity-0 -rotate-90 origin-center"
+                                    className="absolute inset-0 w-[200px] h-full cursor-pointer z-10 opacity-0 -rotate-90 origin-center touch-none"
                                 />
 
                                 {/* Handle Visual */}
@@ -118,8 +129,8 @@ export default function EqualizerPanel({ isOpen, onClose }: EqualizerPanelProps)
                                     key={preset.name}
                                     onClick={() => applyPreset(preset.gains)}
                                     className={`py-3 px-2 rounded-2xl text-[10px] font-black transition-all border-2 ${isActive
-                                            ? 'bg-[var(--primary-dynamic)] text-white border-[var(--primary-dynamic)] shadow-xl shadow-[var(--primary-dynamic)]/20 scale-[1.05]'
-                                            : 'bg-white/5 text-white/40 border-transparent hover:bg-white/10 hover:text-white'
+                                        ? 'bg-[var(--primary-dynamic)] text-white border-[var(--primary-dynamic)] shadow-xl shadow-[var(--primary-dynamic)]/20 scale-[1.05]'
+                                        : 'bg-white/5 text-white/40 border-transparent hover:bg-white/10 hover:text-white'
                                         }`}
                                 >
                                     {preset.name}

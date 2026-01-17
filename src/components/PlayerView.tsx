@@ -138,7 +138,7 @@ export default function PlayerView({ station, stationuuid, relatedStations, onOp
     if (!currentStation) return null;
 
     return (
-        <div className="min-h-screen bg-[var(--background)] flex flex-col relative overflow-hidden">
+        <div className="h-screen h-[100dvh] bg-[var(--background)] flex flex-col relative overflow-hidden touch-none select-none">
             {/* Background with station image and Aurora effect */}
             <div className="absolute inset-0 overflow-hidden bg-black">
                 {/* Aurora Orbs */}
@@ -161,7 +161,7 @@ export default function PlayerView({ station, stationuuid, relatedStations, onOp
             </div>
 
             {/* Content */}
-            <div className="relative z-10 flex flex-col min-h-screen">
+            <div className="relative z-10 flex flex-col h-full">
                 {/* Header */}
                 <header className="flex items-center justify-between p-4">
                     {onOpenDiscover ? (
