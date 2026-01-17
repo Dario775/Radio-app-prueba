@@ -36,10 +36,17 @@ export function useAlarms() {
         ));
     };
 
+    const updateAlarm = (id: string, updates: Partial<RadioAlarm>) => {
+        saveAlarms(alarms.map(a =>
+            a.id === id ? { ...a, ...updates } : a
+        ));
+    };
+
     return {
         alarms,
         addAlarm,
         removeAlarm,
-        toggleAlarm
+        toggleAlarm,
+        updateAlarm
     };
 }
