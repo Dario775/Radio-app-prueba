@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useRef, useEffect, useCallback } from 'react';
-import type { RadioStation } from '@/types/radio';
+import type { RadioStation, RadioAlarm } from '@/types/radio';
 
 interface AudioContextType {
     currentStation: RadioStation | null;
