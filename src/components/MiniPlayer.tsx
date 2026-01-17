@@ -3,6 +3,7 @@
 import { useAudio } from '@/context/AudioContext';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
+import CastButton from './CastButton';
 
 export default function MiniPlayer() {
     const { currentStation, isPlaying, togglePlay, isLoading, dominantColor } = useAudio();
@@ -13,14 +14,6 @@ export default function MiniPlayer() {
     useEffect(() => {
         // Show only if a station is playing/loaded
         // AND we are not on the full-screen player view
-        // The full-screen player is only on '/' when 'view' is 'player'
-        // Since we can't easily know the 'view' state here, we'll try to guess
-        // or just show it everywhere except when we're sure the full player is there.
-
-        // If we are on home page, we might be in Discover or Player.
-        // We'll let the Home page handle its own MiniPlayer if needed, 
-        // to avoid complicated state sharing.
-        // Actually, let's just show it on all sub-pages for now.
         setIsVisible(pathname !== '/');
     }, [pathname, currentStation]);
 
@@ -55,24 +48,27 @@ export default function MiniPlayer() {
                 </div>
 
                 {/* Controls */}
-                <button
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        togglePlay();
-                    }}
-                    className="w-10 h-10 rounded-full flex items-center justify-center transition-all bg-[var(--primary-dynamic)] text-white shadow-lg active:scale-95"
-                    style={{ backgroundColor: 'var(--primary-dynamic)' }}
-                >
-                    {isPlaying ? (
-                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
-                        </svg>
-                    ) : (
-                        <svg className="w-5 h-5 translate-x-0.5" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M8 5v14l11-7z" />
-                        </svg>
-                    )}
-                </button>
+                <div onClick={(e) => e.stopPropagation()} className="flex items-center gap-2">
+                    <CastButton />
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            togglePlay();
+                        }}
+                        className="w-10 h-10 rounded-full flex items-center justify-center transition-all bg-[var(--primary-dynamic)] text-white shadow-lg active:scale-95"
+                        style={{ backgroundColor: 'var(--primary-dynamic)' }}
+                    >
+                        {isPlaying ? (
+                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+                            </svg>
+                        ) : (
+                            <svg className="w-5 h-5 translate-x-0.5" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M8 5v14l11-7z" />
+                            </svg>
+                        )}
+                    </button>
+                </div>
             </div>
 
             <style jsx>{`

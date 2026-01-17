@@ -6,6 +6,7 @@ import { useFavorites } from '@/hooks/useFavorites';
 import { useAudio } from '@/context/AudioContext';
 import type { RadioStation, AudioPreferences } from '@/types/radio';
 import Visualizer from '@/components/Visualizer';
+import CastButton from '@/components/CastButton';
 
 interface PlayerViewProps {
     station?: RadioStation;
@@ -182,6 +183,7 @@ export default function PlayerView({ station, stationuuid, relatedStations, onOp
                     )}
 
                     <div className="flex items-center gap-2">
+                        <CastButton />
                         <button
                             onClick={handleShare}
                             className="p-3 rounded-full glass hover:bg-white/10 transition-colors"
