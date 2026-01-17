@@ -20,6 +20,8 @@ interface AudioContextType {
     recordingDuration: number;
     startRecording: () => void;
     stopRecording: () => void;
+    sleepTimer: number | null;
+    setSleepTimer: (minutes: number | null) => void;
 }
 
 const AudioContext = createContext<AudioContextType | undefined>(undefined);
@@ -33,6 +35,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
     const [eqGains, setEqGains] = useState<number[]>([0, 0, 0, 0, 0]);
     const [isRecording, setIsRecording] = useState(false);
     const [recordingDuration, setRecordingDuration] = useState(0);
+    const [sleepTimer, setSleepTimer] = useState<number | null>(null);
     const audioRef = useRef<HTMLAudioElement>(null);
     const audioCtxRef = useRef<AudioContext | null>(null);
     const sourceRef = useRef<MediaElementAudioSourceNode | null>(null);
@@ -326,6 +329,37 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
         }
     }, []);
 
+    // Sleep Timer Logic - Global
+    useEffect(() => {
+        let interval: NodeJS.Timeout;
+        if (sleepTimer !== null && isPlaying) {
+            interval = setInterval(() => {
+                setSleepTimer(prev => {
+                    if (prev === null) return null;
+                    if (prev <= 1) { // less than 1 minute (we simplify to minutes for state, but execution could be finer)
+                        // Actually, let's switch to seconds internally or just check minutes 
+                        // For simplicity, if we store minutes, we decrement every minute.
+                        // Better: allow tracking seconds if needed, but for "Sleep in 15m", minute check is fine.
+                        // BUT user wants precise feedback? PlayerView had seconds.
+                        // Let's stick to simple minute decrement for now, or change state to seconds?
+                        // Let's use seconds for smoother countdown if displayed
+                        return prev - (1 / 60);
+                    }
+                    return prev - (1 / 60);
+                });
+            }, 1000);
+        }
+        return () => clearInterval(interval);
+    }, [sleepTimer, isPlaying]);
+
+    // Check specific 0 trigger
+    useEffect(() => {
+        if (sleepTimer !== null && sleepTimer <= 0) {
+            if (isPlaying) togglePlay();
+            setSleepTimer(null);
+        }
+    }, [sleepTimer, isPlaying, togglePlay]);
+
     // Smart Alarm Logic: Fetch Weather and Speak
     const runSmartAlarm = async (station: RadioStation) => {
         try {
@@ -414,7 +448,9 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
             isRecording,
             recordingDuration,
             startRecording,
-            stopRecording
+            stopRecording,
+            sleepTimer,
+            setSleepTimer
         }}>
             {children}
             {/* The actual hidden audio element */}

@@ -30,11 +30,12 @@ export default function PlayerView({ station, stationuuid, relatedStations, onOp
         isRecording,
         recordingDuration,
         startRecording,
-        stopRecording
+        stopRecording,
+        sleepTimer,
+        setSleepTimer
     } = useAudio();
 
     const [imageError, setImageError] = useState(false);
-    const [timeLeft, setTimeLeft] = useState<number | null>(null);
     const { toggleFavorite, isFavorite } = useFavorites();
     const [showEQ, setShowEQ] = useState(false);
     const [isInmersive, setIsInmersive] = useState(false);
@@ -74,41 +75,9 @@ export default function PlayerView({ station, stationuuid, relatedStations, onOp
         }
     }, [station, stationuuid, currentStation, playStation]);
 
-    // Sleep Timer Logic
-    useEffect(() => {
-        const stored = localStorage.getItem('audioPreferences');
-        if (stored) {
-            const prefs: AudioPreferences = JSON.parse(stored);
-            if (prefs.sleepTimer && isPlaying) {
-                if (timeLeft === null) {
-                    setTimeLeft(prefs.sleepTimer * 60);
-                }
-            } else {
-                setTimeLeft(null);
-            }
-        }
-    }, [isPlaying, currentStation, timeLeft]);
-
-    useEffect(() => {
-        let timer: NodeJS.Timeout;
-        if (timeLeft !== null && timeLeft > 0 && isPlaying) {
-            timer = setInterval(() => {
-                setTimeLeft(prev => {
-                    if (prev && prev <= 1) {
-                        clearInterval(timer);
-                        if (isPlaying) togglePlay();
-                        return 0;
-                    }
-                    return prev ? prev - 1 : 0;
-                });
-            }, 1000);
-        }
-        return () => clearInterval(timer);
-    }, [timeLeft, isPlaying, togglePlay]);
-
-    const formatTimeLeft = (seconds: number) => {
-        const m = Math.floor(seconds / 60);
-        const s = seconds % 60;
+    const formatTimeLeft = (minutes: number) => {
+        const m = Math.floor(minutes);
+        const s = Math.floor((minutes - m) * 60);
         return `${m}:${s.toString().padStart(2, '0')}`;
     };
 
@@ -216,18 +185,29 @@ export default function PlayerView({ station, stationuuid, relatedStations, onOp
                         <div className="relative">
                             <button
                                 onClick={() => setShowMenu(!showMenu)}
-                                className={`p-3 rounded-full hover:bg-white/10 transition-colors ${showMenu ? 'bg-white/10 text-white' : 'text-white/70'}`}
+                                className={`p-3 rounded-full hover:bg-white/10 transition-colors ${showMenu ? 'bg-white/10 text-white' : 'text-white/70'} ${sleepTimer ? 'text-[var(--primary-dynamic)]' : ''}`}
                             >
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
                                 </svg>
+                                {sleepTimer && (
+                                    <span className="absolute top-2 right-2 flex h-2 w-2">
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--primary-dynamic)] opacity-75"></span>
+                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--primary-dynamic)]"></span>
+                                    </span>
+                                )}
                             </button>
 
                             {showMenu && (
                                 <>
                                     <div className="fixed inset-0 z-40" onClick={() => setShowMenu(false)} />
-                                    <div className="absolute right-0 mt-2 w-56 bg-[#1a1a1a]/90 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden shadow-2xl z-50 animate-in fade-in slide-in-from-top-2">
-                                        <div className="p-2 space-y-1">
+                                    <div className="absolute right-0 mt-2 w-64 bg-[#151515]/95 backdrop-blur-2xl border border-white/10 rounded-3xl overflow-hidden shadow-2xl z-50 animate-in fade-in slide-in-from-top-2">
+                                        <div className="p-3 space-y-2">
+                                            {/* Header Menu */}
+                                            <div className="px-3 py-2 text-xs font-bold text-white/30 uppercase tracking-widest border-b border-white/5 mb-1">
+                                                Acciones Rápidas
+                                            </div>
+
                                             <button
                                                 onClick={() => { setIsInmersive(!isInmersive); setShowMenu(false); }}
                                                 className="w-full flex items-center justify-between px-4 py-3 rounded-xl hover:bg-white/5 transition-colors group"
@@ -288,6 +268,35 @@ export default function PlayerView({ station, stationuuid, relatedStations, onOp
                                                 </svg>
                                                 <span className="text-sm font-medium">Compartir</span>
                                             </button>
+
+                                            {/* Sleep Timer Section */}
+                                            <div className="px-4 py-2 border-t border-white/5 mt-1 pt-2">
+                                                <div className="flex items-center gap-2 mb-2">
+                                                    <svg className="w-4 h-4 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                    </svg>
+                                                    <span className="text-xs font-bold text-white/50 uppercase tracking-widest">Temporizador</span>
+                                                </div>
+                                                <div className="grid grid-cols-4 gap-1">
+                                                    {[15, 30, 45, 60].map(min => (
+                                                        <button
+                                                            key={min}
+                                                            onClick={() => setSleepTimer(min)}
+                                                            className={`py-1.5 rounded-lg text-[10px] font-bold transition-all border ${sleepTimer === min ? 'bg-[var(--primary-dynamic)] text-white border-[var(--primary-dynamic)]' : 'bg-white/5 text-white/50 border-transparent hover:bg-white/10'}`}
+                                                        >
+                                                            {min}m
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                                {sleepTimer && (
+                                                    <button
+                                                        onClick={() => setSleepTimer(null)}
+                                                        className="w-full mt-2 py-1.5 text-[10px] font-bold text-red-400 hover:bg-red-400/10 rounded-lg transition-colors"
+                                                    >
+                                                        Cancelar Temporizador ({formatTimeLeft(sleepTimer)})
+                                                    </button>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                 </>
@@ -350,12 +359,12 @@ export default function PlayerView({ station, stationuuid, relatedStations, onOp
                                     </>
                                 )}
                             </p>
-                            {timeLeft !== null && timeLeft > 0 && isPlaying && (
-                                <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-blue-500/10 text-blue-400 text-[10px] border border-blue-500/20">
+                            {sleepTimer && sleepTimer > 0 && isPlaying && (
+                                <div className="flex items-center gap-1.5 px-3 py-1 mt-1 rounded-full bg-[var(--primary-dynamic)]/10 text-[var(--primary-dynamic)] text-[10px] font-bold border border-[var(--primary-dynamic)]/20 animate-fade-in">
                                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
-                                    Apagado: {formatTimeLeft(timeLeft)}
+                                    Cierre en: {formatTimeLeft(sleepTimer)}
                                 </div>
                             )}
                         </div>
