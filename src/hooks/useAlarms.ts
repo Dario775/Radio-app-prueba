@@ -1,0 +1,48 @@
+'use client';
+
+import { useState, useEffect, useCallback } from 'react';
+import type { RadioAlarm, RadioStation } from '@/types/radio';
+
+export function useAlarms() {
+    const [alarms, setAlarms] = useState<RadioAlarm[]>([]);
+
+    useEffect(() => {
+        const stored = localStorage.getItem('radio_alarms');
+        if (stored) {
+            setAlarms(JSON.parse(stored));
+        }
+    }, []);
+
+    const saveAlarms = (newAlarms: RadioAlarm[]) => {
+        setAlarms(newAlarms);
+        localStorage.setItem('radio_alarms', JSON.stringify(newAlarms));
+    };
+
+    const addAlarm = (time: string, days: number[], station: RadioStation) => {
+        const newAlarm: RadioAlarm = {
+            id: Math.random().toString(36).substr(2, 9),
+            time,
+            days,
+            enabled: true,
+            station
+        };
+        saveAlarms([...alarms, newAlarm]);
+    };
+
+    const removeAlarm = (id: string) => {
+        saveAlarms(alarms.filter(a => a.id !== id));
+    };
+
+    const toggleAlarm = (id: string) => {
+        saveAlarms(alarms.map(a =>
+            a.id === id ? { ...a, enabled: !a.enabled } : a
+        ));
+    };
+
+    return {
+        alarms,
+        addAlarm,
+        removeAlarm,
+        toggleAlarm
+    };
+}
