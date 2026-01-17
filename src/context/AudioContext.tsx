@@ -363,21 +363,56 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
     // Smart Alarm Logic: Fetch Weather and Speak
     const runSmartAlarm = async (station: RadioStation) => {
         try {
-            // 1. Get location and weather (Free API, no key needed) - Defaulting to user region or generic for demo
+            // 1. Get location and weather (Free API, open-meteo)
             const weatherRes = await fetch('https://api.open-meteo.com/v1/forecast?latitude=-34.6037&longitude=-58.3816&current_weather=true');
             const weatherData = await weatherRes.json();
-            const temp = weatherData.current_weather.temperature;
+            const temp = Math.round(weatherData.current_weather.temperature);
 
-            const msg = new SpeechSynthesisUtterance();
-            msg.text = `Buenos días. Son las ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}. La temperatura actual es de ${temp} grados. Iniciando tu emisora: ${station.name}. Que tengas un excelente día.`;
-            msg.lang = 'es-ES';
-            msg.rate = 0.9;
+            // 2. Get News Headlines (BBC Mundo via rss2json for CORS)
+            let newsText = "";
+            try {
+                const newsRes = await fetch('https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Ffeeds.bbci.co.uk%2Fmundo%2Frss.xml');
+                const newsData = await newsRes.json();
+                if (newsData.status === 'ok' && newsData.items) {
+                    const headlines = newsData.items.slice(0, 3).map((item: any) => item.title).join('. ');
+                    newsText = `Aquí tienes las noticias destacadas: ${headlines}.`;
+                }
+            } catch (e) {
+                console.warn('News fetch failed', e);
+            }
 
-            window.speechSynthesis.speak(msg);
+            // 3. Construct Speech
+            const msgs = [
+                `Buenos días. Son las ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}.`,
+                `La temperatura actual es de ${temp} grados.`,
+                newsText,
+                `Iniciando tu emisora: ${station.name}.`,
+                `Que tengas un excelente día.`
+            ];
 
-            msg.onend = () => {
+            const fullText = msgs.filter(Boolean).join(' ');
+
+            const utterance = new SpeechSynthesisUtterance(fullText);
+            utterance.lang = 'es-ES';
+            utterance.rate = 0.95; // Slightly faster natural pace
+
+            // Ensure audio context is unlocked/ready before speaking if possible (browser quirk)
+            window.speechSynthesis.cancel(); // Clear queue
+            window.speechSynthesis.speak(utterance);
+
+            utterance.onend = () => {
                 playStation(station);
             };
+
+            // Fallback safety if speech fails or hangs
+            setTimeout(() => {
+                if (!isPlaying && window.speechSynthesis.speaking) {
+                    // let it finish
+                } else if (!isPlaying) {
+                    playStation(station);
+                }
+            }, 15000); // 15s max waiting time
+
         } catch (err) {
             console.error('Smart alarm failed:', err);
             playStation(station); // Fallback to just radio
