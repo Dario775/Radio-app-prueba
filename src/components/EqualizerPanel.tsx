@@ -129,20 +129,22 @@ export default function EqualizerPanel({ isOpen, onClose }: EqualizerPanelProps)
                                 {/* 0dB Grid Line */}
                                 <div className="absolute top-1/2 left-0 right-0 h-px bg-white/5 pointer-events-none" />
 
-                                {/* Fill Track - Dynamic Height */}
+                                {/* Fill Track - Dynamic Height with safety padding */}
                                 <div
-                                    className="absolute bottom-6 w-1.5 bg-gradient-to-t from-[var(--primary-dynamic)] to-cyan-400 rounded-full shadow-[0_0_20px_rgba(var(--primary-dynamic-rgb),0.4)]"
+                                    className="absolute w-1.5 bg-gradient-to-t from-[var(--primary-dynamic)] to-cyan-400 rounded-full shadow-[0_0_20px_rgba(var(--primary-dynamic-rgb),0.4)]"
                                     style={{
-                                        height: `${((eqGains[i] + 20) / 40) * 100}%`,
-                                        maxHeight: 'calc(100% - 3rem)'
+                                        bottom: '1.5rem',
+                                        height: `calc(${((eqGains[i] + 20) / 40) * 100}% - 0.5rem)`,
+                                        maxHeight: 'calc(100% - 3rem)',
+                                        minHeight: '2px'
                                     }}
                                 />
 
-                                {/* Handle Visual - Precise Positioning */}
+                                {/* Handle Visual - Precise Positioning with safety boundaries */}
                                 <div
                                     className={`absolute w-7 h-7 bg-white rounded-full shadow-2xl border-2 border-[var(--primary-dynamic)] pointer-events-none z-20 transition-transform ${activeBand === i ? 'scale-125' : 'scale-100'}`}
                                     style={{
-                                        bottom: `calc(${((eqGains[i] + 20) / 40) * 100}% + 1.5rem)`,
+                                        bottom: `calc(1.5rem + ${((eqGains[i] + 20) / 40) * 100}% - ${((eqGains[i] + 20) / 40) * 3}rem)`,
                                         transform: 'translateY(50%)'
                                     }}
                                 >
@@ -172,8 +174,8 @@ export default function EqualizerPanel({ isOpen, onClose }: EqualizerPanelProps)
                                     key={preset.name}
                                     onClick={() => setMultipleEqGains(preset.gains)}
                                     className={`py-4 px-2 rounded-2xl text-[10px] font-black transition-all border-2 active:scale-95 ${isCurrent
-                                            ? 'bg-[var(--primary-dynamic)] text-white border-[var(--primary-dynamic)] shadow-xl shadow-[var(--primary-dynamic)]/30 scale-[1.02]'
-                                            : 'bg-white/5 text-white/40 border-transparent hover:bg-white/10 hover:text-white hover:border-white/5'
+                                        ? 'bg-[var(--primary-dynamic)] text-white border-[var(--primary-dynamic)] shadow-xl shadow-[var(--primary-dynamic)]/30 scale-[1.02]'
+                                        : 'bg-white/5 text-white/40 border-transparent hover:bg-white/10 hover:text-white hover:border-white/5'
                                         }`}
                                 >
                                     {preset.name}
