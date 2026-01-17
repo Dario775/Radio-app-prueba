@@ -6,7 +6,7 @@ import { useAlarms } from '@/hooks/useAlarms';
 import { useFavorites } from '@/hooks/useFavorites';
 import type { RadioStation } from '@/types/radio';
 
-const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const DAYS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 
 export default function AlarmsPage() {
     const { alarms, addAlarm, removeAlarm, toggleAlarm } = useAlarms();
@@ -48,8 +48,8 @@ export default function AlarmsPage() {
             <header className="p-6">
                 <div className="max-w-4xl mx-auto flex items-center justify-between">
                     <div>
-                        <h1 className="text-3xl font-bold gradient-text">Radio Alarms</h1>
-                        <p className="text-[var(--text-muted)] mt-1">Wake up with your favorite station</p>
+                        <h1 className="text-3xl font-bold gradient-text">Alarmas de Radio</h1>
+                        <p className="text-[var(--text-muted)] mt-1">Despierta con tu emisora favorita</p>
                     </div>
                     <button
                         onClick={() => setIsAdding(true)}
@@ -58,7 +58,7 @@ export default function AlarmsPage() {
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                         </svg>
-                        Set Alarm
+                        Nueva Alarma
                     </button>
                 </div>
             </header>
@@ -73,13 +73,13 @@ export default function AlarmsPage() {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                             </div>
-                            <h3 className="text-xl font-bold mb-2">No alarms set</h3>
-                            <p className="text-[var(--text-muted)] mb-6">You haven't programmed any radio alarms yet.</p>
+                            <h3 className="text-xl font-bold mb-2">Sin alarmas configuradas</h3>
+                            <p className="text-[var(--text-muted)] mb-6">Aún no has programado ninguna alarma de radio.</p>
                             <button
                                 onClick={() => setIsAdding(true)}
                                 className="text-[var(--primary-dynamic)] font-bold hover:underline"
                             >
-                                Create your first alarm
+                                Crea tu primera alarma
                             </button>
                         </div>
                     ) : (
@@ -137,10 +137,10 @@ export default function AlarmsPage() {
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 sm:p-0">
                     <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setIsAdding(false)} />
                     <div className="relative bg-[var(--surface)] w-full max-w-md rounded-3xl p-8 border border-white/10 shadow-2xl animate-fade-in">
-                        <h2 className="text-2xl font-bold mb-6">New Radio Alarm</h2>
+                        <h2 className="text-2xl font-bold mb-6">Nueva Alarma</h2>
                         <form onSubmit={handleAdd} className="space-y-6">
                             <div>
-                                <label className="block text-sm text-[var(--text-muted)] mb-2 uppercase font-bold tracking-wider">Time</label>
+                                <label className="block text-sm text-[var(--text-muted)] mb-2 uppercase font-bold tracking-wider">Hora</label>
                                 <input
                                     type="time"
                                     value={time}
@@ -151,7 +151,7 @@ export default function AlarmsPage() {
                             </div>
 
                             <div>
-                                <label className="block text-sm text-[var(--text-muted)] mb-3 uppercase font-bold tracking-wider">Repeat Days</label>
+                                <label className="block text-sm text-[var(--text-muted)] mb-3 uppercase font-bold tracking-wider">Repetir días</label>
                                 <div className="flex justify-between">
                                     {DAYS.map((day, i) => (
                                         <button
@@ -167,9 +167,9 @@ export default function AlarmsPage() {
                             </div>
 
                             <div>
-                                <label className="block text-sm text-[var(--text-muted)] mb-3 uppercase font-bold tracking-wider">Radio Station</label>
+                                <label className="block text-sm text-[var(--text-muted)] mb-3 uppercase font-bold tracking-wider">Emisora de Radio</label>
                                 {allStations.length === 0 ? (
-                                    <p className="text-xs text-orange-400 p-3 bg-orange-400/10 rounded-lg">You need to add some stations to your favorites first!</p>
+                                    <p className="text-xs text-orange-400 p-3 bg-orange-400/10 rounded-lg">¡Necesitas añadir algunas emisoras a favoritas primero!</p>
                                 ) : (
                                     <div className="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
                                         {allStations.map(station => (
@@ -193,14 +193,14 @@ export default function AlarmsPage() {
                                     onClick={() => setIsAdding(false)}
                                     className="flex-1 px-6 py-3 rounded-xl glass hover:bg-white/10 transition-colors font-medium"
                                 >
-                                    Cancel
+                                    Cancelar
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={!selectedStation}
                                     className="flex-1 px-6 py-3 rounded-xl bg-[var(--primary-dynamic)] text-white font-bold shadow-lg hover:scale-105 transition-transform active:scale-95 disabled:opacity-50"
                                 >
-                                    Save Alarm
+                                    Guardar Alarma
                                 </button>
                             </div>
                         </form>

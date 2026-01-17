@@ -44,8 +44,8 @@ export default function AddRadioPage() {
                             </svg>
                         </Link>
                         <div>
-                            <h1 className="text-xl font-bold gradient-text">Add Custom Radio</h1>
-                            <p className="text-sm text-[var(--text-muted)]">Play your own streams</p>
+                            <h1 className="text-xl font-bold gradient-text">Añadir Radio Personalizada</h1>
+                            <p className="text-sm text-[var(--text-muted)]">Reproduce tus propios enlaces</p>
                         </div>
                     </div>
                 </div>
@@ -65,44 +65,44 @@ export default function AddRadioPage() {
                                     </svg>
                                 )}
                             </div>
-                            <span className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wider">Logo Preview</span>
+                            <span className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wider">Vista previa del Logo</span>
                         </div>
 
                         <div className="space-y-4">
                             <div>
                                 <label className="block text-sm font-medium text-[var(--text-muted)] mb-1.5 ml-1">
-                                    Station Name
+                                    Nombre de la Emisora
                                 </label>
                                 <input
                                     type="text"
                                     required
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
-                                    placeholder="e.g. My Favorite FM"
+                                    placeholder="ej. Mi FM Favorita"
                                     className="w-full px-4 py-3 bg-black/20 border border-[var(--border)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--primary)] text-[var(--foreground)] transition-all"
                                 />
                             </div>
 
                             <div>
                                 <label className="block text-sm font-medium text-[var(--text-muted)] mb-1.5 ml-1">
-                                    Stream URL (HTTPS)
+                                    URL del Stream (HTTPS)
                                 </label>
                                 <input
                                     type="url"
                                     required
                                     value={url}
                                     onChange={(e) => setUrl(e.target.value)}
-                                    placeholder="https://stream.provider.com/live"
+                                    placeholder="https://servidor.com/en-vivo"
                                     className="w-full px-4 py-3 bg-black/20 border border-[var(--border)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--primary)] text-[var(--foreground)] transition-all"
                                 />
                                 <p className="mt-1.5 text-[11px] text-[var(--text-muted)] ml-1">
-                                    Make sure the URL is a direct stream link (AAC, MP3, etc.)
+                                    Asegúrate de que la URL sea un enlace directo al stream (AAC, MP3, etc.)
                                 </p>
                             </div>
 
                             <div>
                                 <label className="block text-sm font-medium text-[var(--text-muted)] mb-1.5 ml-1">
-                                    Logo URL (Optional)
+                                    URL del Logo (Opcional)
                                 </label>
                                 <input
                                     type="url"
@@ -126,7 +126,7 @@ export default function AddRadioPage() {
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                                     </svg>
-                                    Add Radio Station
+                                    Añadir Emisora
                                 </>
                             )}
                         </button>

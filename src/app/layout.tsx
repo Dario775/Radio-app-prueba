@@ -16,13 +16,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "RadioWave - Live Radio Streaming",
-  description: "Discover and listen to thousands of radio stations from around the world. Stream live music, news, sports, and more.",
-  keywords: ["radio", "streaming", "music", "live radio", "internet radio"],
+  title: "RadioWave - Radio en Vivo",
+  description: "Descubre y escucha miles de emisoras de radio de todo el mundo. Música en vivo, noticias, deportes y más.",
+  keywords: ["radio", "streaming", "música", "radio en vivo", "radio por internet"],
   authors: [{ name: "RadioWave" }],
   openGraph: {
-    title: "RadioWave - Live Radio Streaming",
-    description: "Discover and listen to thousands of radio stations from around the world.",
+    title: "RadioWave - Radio en Vivo",
+    description: "Descubre y escucha miles de emisoras de radio de todo el mundo.",
     type: "website",
   },
 };
@@ -41,7 +41,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="es" className="dark">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen`}
       >

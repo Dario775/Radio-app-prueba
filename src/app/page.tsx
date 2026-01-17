@@ -22,16 +22,33 @@ interface Genre {
 }
 
 const genres: Genre[] = [
-  { id: 'all', label: 'For You', icon: 'M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z', color: '#00bdc7' },
-  { id: 'pop', label: 'Pop Hits', icon: 'M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z', color: '#ff2d55' },
+  { id: 'all', label: 'Para Ti', icon: 'M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z', color: '#00bdc7' },
+  { id: 'pop', label: 'Éxitos Pop', icon: 'M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z', color: '#ff2d55' },
   { id: 'rock', label: 'Rock', icon: 'M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z', color: '#ff9500' },
   { id: 'jazz', label: 'Jazz', icon: 'M21 3l-6 1.45V14.65c-.48-.23-1.02-.35-1.58-.35-1.93 0-3.5 1.57-3.5 3.5s1.57 3.5 3.5 3.5 3.5-1.57 3.5-3.5V6l4-1V3z', color: '#5856d6' },
-  { id: 'classical', label: 'Classics', icon: 'M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V3h6v4h-4V3z', color: '#af52de' },
-  { id: 'electronic', label: 'Electronic', icon: 'M12 1a9 9 0 00-9 9v7c0 1.66 1.34 3 3 3h3v-8H5v-2a7 7 0 0114 0v2h-4v8h3c1.66 0 3-1.34 3-3v-7a9 9 0 00-9-9z', color: '#34c759' },
+  { id: 'classical', label: 'Clásica', icon: 'M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V3h6v4h-4V3z', color: '#af52de' },
+  { id: 'electronic', label: 'Electrónica', icon: 'M12 1a9 9 0 00-9 9v7c0 1.66 1.34 3 3 3h3v-8H5v-2a7 7 0 0114 0v2h-4v8h3c1.66 0 3-1.34 3-3v-7a9 9 0 00-9-9z', color: '#34c759' },
   { id: 'hiphop', label: 'Hip Hop', icon: 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z', color: '#ff3b30' },
-  { id: 'news', label: 'News', icon: 'M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 12H7v2h10v-2zm0-4H7v2h10v-2zm0-4H7v2h10V7z', color: '#007aff' },
-  { id: 'sports', label: 'Sports', icon: 'M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z', color: '#5ac8fa' },
+  { id: 'news', label: 'Noticias', icon: 'M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 12H7v2h10v-2zm0-4H7v2h10v-2zm0-4H7v2h10V7z', color: '#007aff' },
+  { id: 'sports', label: 'Deportes', icon: 'M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z', color: '#5ac8fa' },
 ];
+
+interface DiscoverViewProps {
+  searchQuery: string;
+  handleSearch: (query: string) => void;
+  activeCategory: string;
+  handleCategoryChange: (categoryId: string) => void;
+  localStations: RadioStation[];
+  userCountry: { name: string, code: string } | null;
+  isPending: boolean;
+  error: string | null;
+  stations: RadioStation[];
+  fetchStations: (query?: string, tag?: string) => void;
+  handleRoulette: () => void;
+  isRouletteLoading: boolean;
+  topStations: RadioStation[];
+  playStation: (station: RadioStation) => void;
+}
 
 export function DiscoverView({
   searchQuery,
@@ -48,7 +65,7 @@ export function DiscoverView({
   isRouletteLoading,
   topStations,
   playStation
-}: any) {
+}: DiscoverViewProps) {
   return (
     <div className="flex flex-col">
       {/* Header */}
@@ -56,8 +73,8 @@ export function DiscoverView({
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-2xl font-bold gradient-text">Discovery</h1>
-              <p className="text-sm text-[var(--text-muted)]">Find your new favorite radio</p>
+              <h1 className="text-2xl font-bold gradient-text">Descubrir</h1>
+              <p className="text-sm text-[var(--text-muted)]">Encuentra tu nueva radio favorita</p>
             </div>
           </div>
 
@@ -66,7 +83,7 @@ export function DiscoverView({
             <div className="flex-1">
               <SearchBar
                 onSearch={handleSearch}
-                placeholder="Search by station name..."
+                placeholder="Buscar por nombre de emisora..."
                 initialValue={searchQuery}
               />
             </div>
@@ -79,14 +96,14 @@ export function DiscoverView({
         <div className="max-w-4xl mx-auto px-4 mb-4">
           <div className="flex items-center justify-between mb-2">
             <div>
-              <h2 className="text-sm font-bold uppercase tracking-[0.2em] text-[var(--primary)] opacity-80">Explore Music</h2>
-              <p className="text-3xl font-black mt-1">What's your mood?</p>
+              <h2 className="text-sm font-bold uppercase tracking-[0.2em] text-[var(--primary)] opacity-80">Explorar Música</h2>
+              <p className="text-3xl font-black mt-1">¿Qué te apetece hoy?</p>
             </div>
             <button
               onClick={handleRoulette}
               disabled={isRouletteLoading}
               className="w-12 h-12 rounded-2xl glass hover:bg-[var(--primary)] hover:text-white transition-all flex items-center justify-center active:scale-95 disabled:opacity-50"
-              title="Surprise Me"
+              title="¡Sorpréndeme!"
             >
               {isRouletteLoading ? <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" /> : <span className="text-2xl">🎲</span>}
             </button>
@@ -107,11 +124,11 @@ export function DiscoverView({
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold flex items-center gap-2">
                 <span className="w-1.5 h-6 bg-[var(--primary)] rounded-full" />
-                Your Top Stations
+                Tus Radios Top
               </h2>
             </div>
             <div className="flex gap-5 overflow-x-auto pb-4 no-scrollbar">
-              {topStations.map((station: any) => (
+              {topStations.map((station: RadioStation) => (
                 <div key={station.stationuuid} className="w-20 flex-shrink-0 flex flex-col items-center group cursor-pointer" onClick={() => playStation(station)}>
                   <div className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-white/5 group-hover:border-[var(--primary)] transition-all shadow-lg mb-2">
                     <img
@@ -138,11 +155,11 @@ export function DiscoverView({
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold flex items-center gap-2">
                 <span className="w-1.5 h-6 bg-orange-400 rounded-full" />
-                Radios in {userCountry?.name}
+                Radios en {userCountry?.name}
               </h2>
             </div>
             <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar">
-              {localStations.map((station: any) => (
+              {localStations.map((station: RadioStation) => (
                 <div key={station.stationuuid} className="w-40 flex-shrink-0">
                   <div onClick={() => { }} className="group block cursor-pointer">
                     <StationCard station={station} />
@@ -155,7 +172,7 @@ export function DiscoverView({
         {isPending ? (
           <div className="flex flex-col items-center justify-center py-20">
             <LoadingSpinner size="lg" />
-            <p className="mt-4 text-[var(--text-muted)]">Loading stations...</p>
+            <p className="mt-4 text-[var(--text-muted)]">Cargando emisoras...</p>
           </div>
         ) : error ? (
           <div className="flex flex-col items-center justify-center py-20">
@@ -169,7 +186,7 @@ export function DiscoverView({
               onClick={() => fetchStations('', activeCategory)}
               className="mt-4 px-6 py-2 bg-[var(--primary)] text-white rounded-full hover:bg-[var(--primary-dark)] transition-colors"
             >
-              Try Again
+              Reintentar
             </button>
           </div>
         ) : stations.length === 0 ? (
@@ -179,20 +196,20 @@ export function DiscoverView({
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
               </svg>
             </div>
-            <p className="text-[var(--text-muted)]">No stations found</p>
-            <p className="text-sm text-[var(--text-muted)] mt-1">Try a different search or category</p>
+            <p className="text-[var(--text-muted)]">No se encontraron emisoras</p>
+            <p className="text-sm text-[var(--text-muted)] mt-1">Prueba con otra búsqueda o categoría</p>
           </div>
         ) : (
           <>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold">
                 {searchQuery
-                  ? `Results for "${searchQuery}"`
+                  ? `Resultados para "${searchQuery}"`
                   : activeCategory === 'all'
-                    ? 'Recommended for you'
-                    : `${activeCategory.charAt(0).toUpperCase() + activeCategory.slice(1)} Stations`}
+                    ? 'Recomendado para ti'
+                    : `Emisoras de ${activeCategory.charAt(0).toUpperCase() + activeCategory.slice(1)}`}
               </h2>
-              <span className="text-sm text-[var(--text-muted)]">{stations.length} stations</span>
+              <span className="text-sm text-[var(--text-muted)]">{stations.length} emisoras</span>
             </div>
 
             <div className="grid gap-3">
@@ -228,7 +245,7 @@ export default function Home() {
         setStations(result);
       } catch (err) {
         console.error('Error fetching stations:', err);
-        setError('Failed to load stations. Please try again.');
+        setError('Error al cargar las emisoras. Por favor, inténtalo de nuevo.');
         setStations([]);
       }
     });

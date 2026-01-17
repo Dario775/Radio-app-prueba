@@ -17,8 +17,8 @@ export default function FavoritesPage() {
             {/* Header */}
             <header className="sticky top-0 z-40 glass-dark border-b border-white/5">
                 <div className="max-w-4xl mx-auto px-4 py-4">
-                    <h1 className="text-2xl font-bold gradient-text">My Library</h1>
-                    <p className="text-sm text-[var(--text-muted)]">Your favorite and custom stations</p>
+                    <h1 className="text-2xl font-bold gradient-text">Mi Biblioteca</h1>
+                    <p className="text-sm text-[var(--text-muted)]">Tus emisoras favoritas y personalizadas</p>
                 </div>
             </header>
 
@@ -30,16 +30,16 @@ export default function FavoritesPage() {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                             </svg>
                         </div>
-                        <h2 className="text-xl font-bold mb-2">Your library is empty</h2>
+                        <h2 className="text-xl font-bold mb-2">Tu biblioteca está vacía</h2>
                         <p className="text-[var(--text-muted)] max-w-sm mb-8">
-                            Start adding radios to your favorites or create your own custom stations.
+                            Comienza a añadir radios a tus favoritas o crea tus propias emisoras personalizadas.
                         </p>
                         <div className="flex gap-4">
                             <Link href="/" className="px-6 py-3 bg-[var(--primary)] text-white rounded-2xl font-semibold hover:bg-[var(--primary-dark)] transition-all">
-                                Discover Radios
+                                Descubrir Radios
                             </Link>
                             <Link href="/add-radio" className="px-6 py-3 glass rounded-2xl font-semibold hover:bg-white/10 transition-all border border-white/10">
-                                Add Custom
+                                Añadir Propia
                             </Link>
                         </div>
                     </div>
@@ -50,7 +50,7 @@ export default function FavoritesPage() {
                                 <div className="flex items-center justify-between mb-4">
                                     <h2 className="text-lg font-bold flex items-center gap-2">
                                         <span className="w-1.5 h-6 bg-pink-500 rounded-full" />
-                                        Recently Played
+                                        Escuchado recientemente
                                     </h2>
                                 </div>
                                 <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar">
@@ -85,9 +85,9 @@ export default function FavoritesPage() {
                                 <div className="flex items-center justify-between mb-4">
                                     <h2 className="text-lg font-bold flex items-center gap-2">
                                         <span className="w-1.5 h-6 bg-cyan-400 rounded-full" />
-                                        Custom Stations
+                                        Emisoras Personalizadas
                                     </h2>
-                                    <span className="text-xs text-[var(--text-muted)] px-2 py-1 rounded-lg bg-white/5">{customRadios.length} stations</span>
+                                    <span className="text-xs text-[var(--text-muted)] px-2 py-1 rounded-lg bg-white/5">{customRadios.length} emisoras</span>
                                 </div>
                                 <div className="grid gap-3">
                                     {customRadios.map((station) => (
@@ -102,9 +102,9 @@ export default function FavoritesPage() {
                                 <div className="flex items-center justify-between mb-4">
                                     <h2 className="text-lg font-bold flex items-center gap-2">
                                         <span className="w-1.5 h-6 bg-[var(--primary)] rounded-full" />
-                                        Favorite Stations
+                                        Emisoras Favoritas
                                     </h2>
-                                    <span className="text-xs text-[var(--text-muted)] px-2 py-1 rounded-lg bg-white/5">{favorites.length} stations</span>
+                                    <span className="text-xs text-[var(--text-muted)] px-2 py-1 rounded-lg bg-white/5">{favorites.length} emisoras</span>
                                 </div>
                                 <div className="grid gap-3">
                                     {favorites.map((station) => (
@@ -119,7 +119,7 @@ export default function FavoritesPage() {
                                 <svg className="w-6 h-6 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                                 </svg>
-                                <span className="font-semibold">Add another custom radio</span>
+                                <span className="font-semibold">Añadir otra radio personalizada</span>
                             </Link>
                         </div>
                     </div>

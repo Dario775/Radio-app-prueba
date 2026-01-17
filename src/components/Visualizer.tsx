@@ -28,7 +28,8 @@ export default function Visualizer({ isPlaying, audioRef, color = 'var(--primary
 
         // Initialize Audio Context and Analyzer only once
         if (!audioContextRef.current) {
-            audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+            const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+            audioContextRef.current = new AudioContextClass();
             analyzerRef.current = audioContextRef.current.createAnalyser();
 
             try {

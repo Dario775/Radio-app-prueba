@@ -50,7 +50,7 @@ export default function MiniPlayer() {
                 <div className="flex-1 min-w-0">
                     <p className="text-sm font-bold truncate">{currentStation.name}</p>
                     <p className="text-[10px] text-[var(--text-muted)] truncate">
-                        {isPlaying ? 'Now Playing' : 'Paused'} • {currentStation.country || 'Live'}
+                        {isPlaying ? 'Reproduciendo' : 'Pausado'} • {currentStation.country || 'En vivo'}
                     </p>
                 </div>
 

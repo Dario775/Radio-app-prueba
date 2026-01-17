@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useFavorites } from '@/hooks/useFavorites';
@@ -78,7 +77,7 @@ export default function StationCard({ station }: StationCardProps) {
                     </h3>
                     <div className="flex items-center gap-2 mt-1">
                         <span className="text-sm text-[var(--text-muted)] truncate">
-                            {station.state ? `${station.state.split(',')[0]}, ` : ''}{station.country || 'Unknown'}
+                            {station.state ? `${station.state.split(',')[0]}, ` : ''}{station.country || 'Desconocida'}
                         </span>
                         {station.bitrate > 0 && (
                             <>

@@ -5,24 +5,24 @@ import Navbar from '@/components/Navbar';
 import type { AudioPreferences } from '@/types/radio';
 
 const qualityOptions = [
-  { id: 'auto', label: 'Auto', description: 'Adjusts based on connection' },
-  { id: 'high', label: 'High', description: '320 kbps or best available' },
-  { id: 'medium', label: 'Medium', description: '128 kbps' },
-  { id: 'low', label: 'Low', description: '64 kbps - saves data' },
+  { id: 'auto', label: 'Auto', description: 'Se ajusta según la conexión' },
+  { id: 'high', label: 'Alta', description: '320 kbps o la mejor disponible' },
+  { id: 'medium', label: 'Media', description: '128 kbps' },
+  { id: 'low', label: 'Baja', description: '64 kbps - ahorra datos' },
 ];
 
 const bufferOptions = [
-  { id: 'small', label: 'Small', description: 'Faster start, may buffer more' },
-  { id: 'medium', label: 'Medium', description: 'Balanced performance' },
-  { id: 'large', label: 'Large', description: 'Stable playback, slower start' },
+  { id: 'small', label: 'Pequeño', description: 'Inicio rápido, puede haber cortes' },
+  { id: 'medium', label: 'Medio', description: 'Rendimiento equilibrado' },
+  { id: 'large', label: 'Grande', description: 'Reproducción estable, inicio lento' },
 ];
 
 const sleepTimerOptions = [
-  { id: null, label: 'Off' },
+  { id: null, label: 'Desactivado' },
   { id: 15, label: '15 min' },
   { id: 30, label: '30 min' },
-  { id: 60, label: '1 hour' },
-  { id: 120, label: '2 hours' },
+  { id: 60, label: '1 hora' },
+  { id: 120, label: '2 horas' },
 ];
 
 export default function AudioPreferences() {
@@ -61,8 +61,8 @@ export default function AudioPreferences() {
       {/* Header */}
       <header className="sticky top-0 z-40 glass-dark border-b border-white/5">
         <div className="max-w-2xl mx-auto px-4 py-4">
-          <h1 className="text-2xl font-bold gradient-text">Settings</h1>
-          <p className="text-sm text-[var(--text-muted)]">Customize your listening experience</p>
+          <h1 className="text-2xl font-bold gradient-text">Ajustes</h1>
+          <p className="text-sm text-[var(--text-muted)]">Personaliza tu experiencia de escucha</p>
         </div>
       </header>
 
@@ -77,8 +77,8 @@ export default function AudioPreferences() {
                 </svg>
               </div>
               <div>
-                <h2 className="font-semibold">Audio Quality</h2>
-                <p className="text-sm text-[var(--text-muted)]">Choose stream quality</p>
+                <h2 className="font-semibold">Calidad de Audio</h2>
+                <p className="text-sm text-[var(--text-muted)]">Elige la calidad del stream</p>
               </div>
             </div>
           </div>
@@ -88,8 +88,8 @@ export default function AudioPreferences() {
                 key={option.id}
                 onClick={() => updatePreference('quality', option.id as AudioPreferences['quality'])}
                 className={`w-full flex items-center justify-between p-4 rounded-xl transition-all ${preferences.quality === option.id
-                    ? 'bg-[var(--primary)]/10 border border-[var(--primary)]/30'
-                    : 'hover:bg-[var(--surface-hover)]'
+                  ? 'bg-[var(--primary)]/10 border border-[var(--primary)]/30'
+                  : 'hover:bg-[var(--surface-hover)]'
                   }`}
               >
                 <div className="text-left">
@@ -97,8 +97,8 @@ export default function AudioPreferences() {
                   <p className="text-sm text-[var(--text-muted)]">{option.description}</p>
                 </div>
                 <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${preferences.quality === option.id
-                    ? 'border-[var(--primary)] bg-[var(--primary)]'
-                    : 'border-[var(--text-muted)]'
+                  ? 'border-[var(--primary)] bg-[var(--primary)]'
+                  : 'border-[var(--text-muted)]'
                   }`}>
                   {preferences.quality === option.id && (
                     <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -121,8 +121,8 @@ export default function AudioPreferences() {
                 </svg>
               </div>
               <div>
-                <h2 className="font-semibold">Streaming Buffer</h2>
-                <p className="text-sm text-[var(--text-muted)]">Balance between speed and stability</p>
+                <h2 className="font-semibold">Búfer de Streaming</h2>
+                <p className="text-sm text-[var(--text-muted)]">Equilibrio entre velocidad y estabilidad</p>
               </div>
             </div>
           </div>
@@ -132,8 +132,8 @@ export default function AudioPreferences() {
                 key={option.id}
                 onClick={() => updatePreference('bufferSize', option.id as AudioPreferences['bufferSize'])}
                 className={`w-full flex items-center justify-between p-4 rounded-xl transition-all ${preferences.bufferSize === option.id
-                    ? 'bg-purple-500/10 border border-purple-500/30'
-                    : 'hover:bg-[var(--surface-hover)]'
+                  ? 'bg-purple-500/10 border border-purple-500/30'
+                  : 'hover:bg-[var(--surface-hover)]'
                   }`}
               >
                 <div className="text-left">
@@ -141,8 +141,8 @@ export default function AudioPreferences() {
                   <p className="text-sm text-[var(--text-muted)]">{option.description}</p>
                 </div>
                 <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${preferences.bufferSize === option.id
-                    ? 'border-purple-500 bg-purple-500'
-                    : 'border-[var(--text-muted)]'
+                  ? 'border-purple-500 bg-purple-500'
+                  : 'border-[var(--text-muted)]'
                   }`}>
                   {preferences.bufferSize === option.id && (
                     <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -165,8 +165,8 @@ export default function AudioPreferences() {
                 </svg>
               </div>
               <div>
-                <h2 className="font-semibold">Sleep Timer</h2>
-                <p className="text-sm text-[var(--text-muted)]">Auto-stop after specified time</p>
+                <h2 className="font-semibold">Temporizador</h2>
+                <p className="text-sm text-[var(--text-muted)]">Apagado automático tras el tiempo indicado</p>
               </div>
             </div>
           </div>
@@ -176,8 +176,8 @@ export default function AudioPreferences() {
                 key={option.label}
                 onClick={() => updatePreference('sleepTimer', option.id)}
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${preferences.sleepTimer === option.id
-                    ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/25'
-                    : 'bg-[var(--surface-hover)] text-[var(--text-muted)] hover:text-[var(--foreground)]'
+                  ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/25'
+                  : 'bg-[var(--surface-hover)] text-[var(--text-muted)] hover:text-[var(--foreground)]'
                   }`}
               >
                 {option.label}
@@ -198,8 +198,8 @@ export default function AudioPreferences() {
                   </svg>
                 </div>
                 <div>
-                  <h2 className="font-semibold">Auto Play</h2>
-                  <p className="text-sm text-[var(--text-muted)]">Start playing when selecting station</p>
+                  <h2 className="font-semibold">Reproducción Automática</h2>
+                  <p className="text-sm text-[var(--text-muted)]">Cargar emisora al seleccionarla</p>
                 </div>
               </div>
               <button
@@ -220,8 +220,8 @@ export default function AudioPreferences() {
         <button
           onClick={savePreferences}
           className={`w-full py-4 rounded-2xl font-semibold transition-all ${saved
-              ? 'bg-green-500 text-white'
-              : 'bg-[var(--primary)] text-white hover:bg-[var(--primary-dark)]'
+            ? 'bg-green-500 text-white'
+            : 'bg-[var(--primary)] text-white hover:bg-[var(--primary-dark)]'
             }`}
         >
           {saved ? (
@@ -229,17 +229,17 @@ export default function AudioPreferences() {
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
               </svg>
-              Saved!
+              ¡Guardado!
             </span>
           ) : (
-            'Save Preferences'
+            'Guardar Preferencias'
           )}
         </button>
 
         {/* App Info */}
         <div className="text-center text-sm text-[var(--text-muted)] pt-4">
           <p className="gradient-text font-semibold">RadioWave v1.0</p>
-          <p className="mt-1">Made with ❤️ for music lovers</p>
+          <p className="mt-1">Hecho con ❤️ para los amantes de la música</p>
         </div>
       </main>
 

@@ -29,7 +29,6 @@ export default function PlayerView({ station, stationuuid, relatedStations, onOp
     const [imageError, setImageError] = useState(false);
     const [timeLeft, setTimeLeft] = useState<number | null>(null);
     const { toggleFavorite, isFavorite } = useFavorites();
-    const [localError, setLocalError] = useState<string | null>(null);
 
     const defaultImage = 'data:image/svg+xml,' + encodeURIComponent(`
     <svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400">
@@ -106,7 +105,7 @@ export default function PlayerView({ station, stationuuid, relatedStations, onOp
         if (!currentStation) return;
         const shareData = {
             title: currentStation.name,
-            text: `I'm listening to ${currentStation.name} on RadioWave!`,
+            text: `¡Estoy escuchando ${currentStation.name} en RadioWave!`,
             url: window.location.href,
         };
 
@@ -115,10 +114,10 @@ export default function PlayerView({ station, stationuuid, relatedStations, onOp
                 await navigator.share(shareData);
             } else {
                 await navigator.clipboard.writeText(window.location.href);
-                alert('Link copied to clipboard!');
+                alert('¡Enlace copiado al portapapeles!');
             }
         } catch (err) {
-            console.error('Error sharing:', err);
+            console.error('Error al compartir:', err);
         }
     };
 
@@ -126,7 +125,7 @@ export default function PlayerView({ station, stationuuid, relatedStations, onOp
         return (
             <div className="min-h-screen bg-[var(--background)] flex flex-col items-center justify-center">
                 <div className="w-12 h-12 border-4 border-[var(--primary)]/30 border-t-[var(--primary)] rounded-full animate-spin mb-4" />
-                <p className="text-[var(--text-muted)] italic">Connecting to stream...</p>
+                <p className="text-[var(--text-muted)] italic">Conectando con la emisora...</p>
             </div>
         );
     }
@@ -168,7 +167,7 @@ export default function PlayerView({ station, stationuuid, relatedStations, onOp
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
-                            <span className="text-sm font-medium">Discover</span>
+                            <span className="text-sm font-medium">Descubrir</span>
                         </button>
                     ) : (
                         <Link
@@ -178,7 +177,7 @@ export default function PlayerView({ station, stationuuid, relatedStations, onOp
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                             </svg>
-                            <span className="text-sm font-medium">Back</span>
+                            <span className="text-sm font-medium">Atrás</span>
                         </Link>
                     )}
 
@@ -186,7 +185,7 @@ export default function PlayerView({ station, stationuuid, relatedStations, onOp
                         <button
                             onClick={handleShare}
                             className="p-3 rounded-full glass hover:bg-white/10 transition-colors"
-                            title="Share station"
+                            title="Compartir emisora"
                         >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
@@ -231,7 +230,7 @@ export default function PlayerView({ station, stationuuid, relatedStations, onOp
                                         <div className="w-0.5 rounded-full equalizer-bar" style={{ backgroundColor: 'var(--primary-dynamic)' }} />
                                         <div className="w-0.5 rounded-full equalizer-bar" style={{ backgroundColor: 'var(--primary-dynamic)' }} />
                                     </div>
-                                    <span className="text-[10px] font-bold tracking-wider uppercase" style={{ color: 'var(--primary-dynamic)' }}>Live</span>
+                                    <span className="text-[10px] font-bold tracking-wider uppercase" style={{ color: 'var(--primary-dynamic)' }}>En vivo</span>
                                 </div>
                             )}
                         </div>
@@ -250,7 +249,7 @@ export default function PlayerView({ station, stationuuid, relatedStations, onOp
                         <h1 className="text-2xl md:text-3xl font-bold mb-2 line-clamp-2">{currentStation.name}</h1>
                         <div className="flex flex-col items-center gap-2">
                             <p className="text-[var(--text-muted)] flex items-center justify-center gap-2">
-                                <span>{currentStation.country || 'Unknown location'}</span>
+                                <span>{currentStation.country || 'Ubicación desconocida'}</span>
                                 {currentStation.bitrate > 30 && (
                                     <>
                                         <span>•</span>
@@ -263,7 +262,7 @@ export default function PlayerView({ station, stationuuid, relatedStations, onOp
                                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
-                                    Sleep: {formatTimeLeft(timeLeft)}
+                                    Apagado: {formatTimeLeft(timeLeft)}
                                 </div>
                             )}
                         </div>
@@ -289,33 +288,31 @@ export default function PlayerView({ station, stationuuid, relatedStations, onOp
                     {/* Alternative Sources */}
                     {relatedStations && relatedStations.length > 0 && (
                         <div className="mb-8 w-full max-w-sm">
-                            <div className="text-xs text-[var(--text-muted)] text-center mb-2">Available Streams</div>
-                            <div className="flex gap-2 overflow-x-auto pb-2 justify-center">
+                            <div className="text-xs text-[var(--text-muted)] text-center mb-2">Canales Disponibles</div>
+                            <button
+                                onClick={() => station && playStation(station)}
+                                className={`px-3 py-1 rounded-full text-xs whitespace-nowrap transition-colors ${currentStation.stationuuid === station?.stationuuid
+                                    ? 'bg-[var(--primary)] text-white'
+                                    : 'glass hover:bg-white/10'
+                                    }`}
+                            >
+                                Principal {station?.bitrate ? `(${station.bitrate}k)` : ''}
+                            </button>
+                            {relatedStations.map((s) => (
                                 <button
-                                    onClick={() => station && playStation(station)}
-                                    className={`px-3 py-1 rounded-full text-xs whitespace-nowrap transition-colors ${currentStation.stationuuid === station?.stationuuid
-                                        ? 'bg-[var(--primary)] text-white'
+                                    key={s.stationuuid}
+                                    onClick={() => playStation(s)}
+                                    className={`px-3 py-1 rounded-full text-xs whitespace-nowrap transition-all duration-500 ${currentStation.stationuuid === s.stationuuid
+                                        ? 'text-white'
                                         : 'glass hover:bg-white/10'
                                         }`}
+                                    style={{
+                                        backgroundColor: currentStation.stationuuid === s.stationuuid ? 'var(--primary-dynamic)' : ''
+                                    }}
                                 >
-                                    Default {station?.bitrate ? `(${station.bitrate}k)` : ''}
+                                    Canal {s.bitrate ? `${s.bitrate}k` : ''}
                                 </button>
-                                {relatedStations.map((s) => (
-                                    <button
-                                        key={s.stationuuid}
-                                        onClick={() => playStation(s)}
-                                        className={`px-3 py-1 rounded-full text-xs whitespace-nowrap transition-all duration-500 ${currentStation.stationuuid === s.stationuuid
-                                            ? 'text-white'
-                                            : 'glass hover:bg-white/10'
-                                            }`}
-                                        style={{
-                                            backgroundColor: currentStation.stationuuid === s.stationuuid ? 'var(--primary-dynamic)' : ''
-                                        }}
-                                    >
-                                        Stream {s.bitrate ? `${s.bitrate}k` : ''}
-                                    </button>
-                                ))}
-                            </div>
+                            ))}
                         </div>
                     )}
 
@@ -410,7 +407,7 @@ export default function PlayerView({ station, stationuuid, relatedStations, onOp
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                                 </svg>
-                                Website
+                                Sitio Web
                             </a>
                         )}
                     </div>

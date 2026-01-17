@@ -25,6 +25,21 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
     const [dominantColor, setDominantColor] = useState('#00bdc7');
     const audioRef = useRef<HTMLAudioElement>(null);
 
+    const togglePlay = useCallback(() => {
+        if (!audioRef.current || !currentStation) return;
+
+        if (isPlaying) {
+            audioRef.current.pause();
+            setIsPlaying(false);
+        } else {
+            setIsLoading(true);
+            audioRef.current.play()
+                .then(() => setIsPlaying(true))
+                .catch(err => console.error('Toggle play error:', err))
+                .finally(() => setIsLoading(false));
+        }
+    }, [isPlaying, currentStation]);
+
     const playStation = useCallback((station: RadioStation) => {
         if (currentStation?.stationuuid === station.stationuuid) {
             togglePlay();
@@ -40,29 +55,14 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
             if (audioRef.current) {
                 audioRef.current.play()
                     .then(() => setIsPlaying(true))
-                    .catch(err => {
-                        console.error('Playback error:', err);
+                    .catch(e => {
+                        console.error('Playback error:', e);
                         setIsPlaying(false);
                     })
                     .finally(() => setIsLoading(false));
             }
         }, 100);
-    }, [currentStation]);
-
-    const togglePlay = useCallback(() => {
-        if (!audioRef.current || !currentStation) return;
-
-        if (isPlaying) {
-            audioRef.current.pause();
-            setIsPlaying(false);
-        } else {
-            setIsLoading(true);
-            audioRef.current.play()
-                .then(() => setIsPlaying(true))
-                .catch(err => console.error('Toggle play error:', err))
-                .finally(() => setIsLoading(false));
-        }
-    }, [isPlaying, currentStation]);
+    }, [currentStation, togglePlay]);
 
     // Handle Media Session API
     useEffect(() => {
@@ -172,7 +172,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
             const stored = localStorage.getItem('radio_alarms');
             if (!stored) return;
 
-            const alarms: any[] = JSON.parse(stored);
+            const alarms: Array<{ id: string; enabled: boolean; time: string; days: number[]; station: RadioStation }> = JSON.parse(stored);
             const activeAlarm = alarms.find(a =>
                 a.enabled &&
                 a.time === currentTime &&

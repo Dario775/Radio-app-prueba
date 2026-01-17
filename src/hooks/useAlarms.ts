@@ -1,17 +1,14 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import type { RadioAlarm, RadioStation } from '@/types/radio';
 
 export function useAlarms() {
-    const [alarms, setAlarms] = useState<RadioAlarm[]>([]);
-
-    useEffect(() => {
+    const [alarms, setAlarms] = useState<RadioAlarm[]>(() => {
+        if (typeof window === 'undefined') return [];
         const stored = localStorage.getItem('radio_alarms');
-        if (stored) {
-            setAlarms(JSON.parse(stored));
-        }
-    }, []);
+        return stored ? JSON.parse(stored) : [];
+    });
 
     const saveAlarms = (newAlarms: RadioAlarm[]) => {
         setAlarms(newAlarms);
