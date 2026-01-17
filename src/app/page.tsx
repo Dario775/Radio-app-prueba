@@ -80,7 +80,6 @@ export function DiscoverView({
     const country = e.target.value;
     setSelectedCountry(country);
     setSelectedState('');
-    handleSearch(`location:${country}`);
 
     try {
       const states = await getStatesForCountry(country);
@@ -91,7 +90,6 @@ export function DiscoverView({
   const handleStateChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const state = e.target.value;
     setSelectedState(state);
-    handleSearch(`location:${selectedCountry}:${state}`);
   };
 
   return (
@@ -106,15 +104,24 @@ export function DiscoverView({
             </div>
           </div>
 
-          {/* Search */}
+          {/* Search and Add Radio */}
           <div className="flex gap-2 items-center">
             <div className="flex-1">
               <SearchBar
                 onSearch={handleSearch}
                 placeholder="Buscar por nombre de emisora..."
-                initialValue={searchQuery}
+                initialValue={searchQuery.startsWith('location:') ? '' : searchQuery}
               />
             </div>
+            <Link
+              href="/add-radio"
+              className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 hover:bg-[var(--primary)] hover:text-white transition-all"
+              title="Añadir tu propia radio"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+            </Link>
           </div>
         </div>
       </header>
@@ -150,11 +157,12 @@ export function DiscoverView({
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
               Explorar por Ubicación
             </h3>
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-3">
               <div className="relative flex-1">
                 <select
                   value={selectedCountry}
                   onChange={handleCountryChange}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSearch(`location:${selectedCountry}`)}
                   className="w-full appearance-none bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[var(--primary)] transition-colors"
                 >
                   <option value="" className="bg-black">Seleccionar País</option>
@@ -171,6 +179,7 @@ export function DiscoverView({
                 <select
                   value={selectedState}
                   onChange={handleStateChange}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSearch(`location:${selectedCountry}:${selectedState}`)}
                   disabled={!selectedCountry || states.length === 0}
                   className="w-full appearance-none bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[var(--primary)] transition-colors disabled:opacity-50"
                 >
@@ -183,6 +192,13 @@ export function DiscoverView({
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} /></svg>
                 </div>
               </div>
+
+              <button
+                onClick={() => handleSearch(selectedState ? `location:${selectedCountry}:${selectedState}` : `location:${selectedCountry}`)}
+                className="px-6 py-2 bg-[var(--primary)] hover:bg-[var(--primary-dark)] text-white font-semibold rounded-xl transition-all active:scale-95 whitespace-nowrap"
+              >
+                Filtrar
+              </button>
             </div>
           </div>
         </div>
@@ -191,108 +207,114 @@ export function DiscoverView({
       {/* Content */}
       <main className="max-w-4xl mx-auto px-4 py-6 pb-32">
         {/* Top Stations Horizontal */}
-        {!searchQuery && activeCategory === 'all' && topStations.length > 0 && (
-          <section className="mb-8">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold flex items-center gap-2">
-                <span className="w-1.5 h-6 bg-[var(--primary)] rounded-full" />
-                Tus Radios Top
-              </h2>
-            </div>
-            <div className="flex gap-5 overflow-x-auto pb-4 no-scrollbar">
-              {topStations.map((station: RadioStation) => (
-                <div key={station.stationuuid} className="w-20 flex-shrink-0 flex flex-col items-center group cursor-pointer" onClick={() => playStation(station)}>
-                  <div className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-white/5 group-hover:border-[var(--primary)] transition-all shadow-lg mb-2">
-                    <img
-                      src={station.favicon || `https://ui-avatars.com/api/?name=${encodeURIComponent(station.name)}&background=random`}
-                      alt={station.name}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform"
-                    />
-                    <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M8 5v14l11-7z" />
-                      </svg>
+        {
+          !searchQuery && activeCategory === 'all' && topStations.length > 0 && (
+            <section className="mb-8">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-bold flex items-center gap-2">
+                  <span className="w-1.5 h-6 bg-[var(--primary)] rounded-full" />
+                  Tus Radios Top
+                </h2>
+              </div>
+              <div className="flex gap-5 overflow-x-auto pb-4 no-scrollbar">
+                {topStations.map((station: RadioStation) => (
+                  <div key={station.stationuuid} className="w-20 flex-shrink-0 flex flex-col items-center group cursor-pointer" onClick={() => playStation(station)}>
+                    <div className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-white/5 group-hover:border-[var(--primary)] transition-all shadow-lg mb-2">
+                      <img
+                        src={station.favicon || `https://ui-avatars.com/api/?name=${encodeURIComponent(station.name)}&background=random`}
+                        alt={station.name}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform"
+                      />
+                      <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M8 5v14l11-7z" />
+                        </svg>
+                      </div>
                     </div>
+                    <span className="text-[10px] font-bold text-center truncate w-full group-hover:text-[var(--primary)] transition-colors opacity-80">{station.name}</span>
                   </div>
-                  <span className="text-[10px] font-bold text-center truncate w-full group-hover:text-[var(--primary)] transition-colors opacity-80">{station.name}</span>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
+                ))}
+              </div>
+            </section>
+          )
+        }
 
         {/* Local Stations Horizontal */}
-        {!searchQuery && activeCategory === 'all' && localStations.length > 0 && (
-          <section className="mb-10">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold flex items-center gap-2">
-                <span className="w-1.5 h-6 bg-orange-400 rounded-full" />
-                Radios en {userCountry?.name}
-              </h2>
-            </div>
-            <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar">
-              {localStations.map((station: RadioStation) => (
-                <div key={station.stationuuid} className="w-40 flex-shrink-0">
-                  <div onClick={() => { }} className="group block cursor-pointer">
-                    <StationCard station={station} />
+        {
+          !searchQuery && activeCategory === 'all' && localStations.length > 0 && (
+            <section className="mb-10">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-bold flex items-center gap-2">
+                  <span className="w-1.5 h-6 bg-orange-400 rounded-full" />
+                  Radios en {userCountry?.name}
+                </h2>
+              </div>
+              <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar">
+                {localStations.map((station: RadioStation) => (
+                  <div key={station.stationuuid} className="w-40 flex-shrink-0">
+                    <div onClick={() => { }} className="group block cursor-pointer">
+                      <StationCard station={station} />
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
+            </section>
+          )
+        }
+        {
+          isPending ? (
+            <div className="flex flex-col items-center justify-center py-20">
+              <LoadingSpinner size="lg" />
+              <p className="mt-4 text-[var(--text-muted)]">Cargando emisoras...</p>
             </div>
-          </section>
-        )}
-        {isPending ? (
-          <div className="flex flex-col items-center justify-center py-20">
-            <LoadingSpinner size="lg" />
-            <p className="mt-4 text-[var(--text-muted)]">Cargando emisoras...</p>
-          </div>
-        ) : error ? (
-          <div className="flex flex-col items-center justify-center py-20">
-            <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mb-4">
-              <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
+          ) : error ? (
+            <div className="flex flex-col items-center justify-center py-20">
+              <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mb-4">
+                <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <p className="text-[var(--text-muted)]">{error}</p>
+              <button
+                onClick={() => fetchStations('', activeCategory)}
+                className="mt-4 px-6 py-2 bg-[var(--primary)] text-white rounded-full hover:bg-[var(--primary-dark)] transition-colors"
+              >
+                Reintentar
+              </button>
             </div>
-            <p className="text-[var(--text-muted)]">{error}</p>
-            <button
-              onClick={() => fetchStations('', activeCategory)}
-              className="mt-4 px-6 py-2 bg-[var(--primary)] text-white rounded-full hover:bg-[var(--primary-dark)] transition-colors"
-            >
-              Reintentar
-            </button>
-          </div>
-        ) : stations.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20">
-            <div className="w-16 h-16 rounded-full bg-[var(--primary)]/10 flex items-center justify-center mb-4">
-              <svg className="w-8 h-8 text-[var(--primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-              </svg>
+          ) : stations.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20">
+              <div className="w-16 h-16 rounded-full bg-[var(--primary)]/10 flex items-center justify-center mb-4">
+                <svg className="w-8 h-8 text-[var(--primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                </svg>
+              </div>
+              <p className="text-[var(--text-muted)]">No se encontraron emisoras</p>
+              <p className="text-sm text-[var(--text-muted)] mt-1">Prueba con otra búsqueda o categoría</p>
             </div>
-            <p className="text-[var(--text-muted)]">No se encontraron emisoras</p>
-            <p className="text-sm text-[var(--text-muted)] mt-1">Prueba con otra búsqueda o categoría</p>
-          </div>
-        ) : (
-          <>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold">
-                {searchQuery
-                  ? `Resultados para "${searchQuery}"`
-                  : activeCategory === 'all'
-                    ? 'Recomendado para ti'
-                    : `Emisoras de ${activeCategory.charAt(0).toUpperCase() + activeCategory.slice(1)}`}
-              </h2>
-              <span className="text-sm text-[var(--text-muted)]">{stations.length} emisoras</span>
-            </div>
+          ) : (
+            <>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold">
+                  {searchQuery
+                    ? `Resultados para "${searchQuery}"`
+                    : activeCategory === 'all'
+                      ? 'Recomendado para ti'
+                      : `Emisoras de ${activeCategory.charAt(0).toUpperCase() + activeCategory.slice(1)}`}
+                </h2>
+                <span className="text-sm text-[var(--text-muted)]">{stations.length} emisoras</span>
+              </div>
 
-            <div className="grid gap-3">
-              {stations.map((station: any) => (
-                <StationCard key={station.stationuuid} station={station} />
-              ))}
-            </div>
-          </>
-        )}
-      </main>
-    </div>
+              <div className="grid gap-3">
+                {stations.map((station: any) => (
+                  <StationCard key={station.stationuuid} station={station} />
+                ))}
+              </div>
+            </>
+          )
+        }
+      </main >
+    </div >
   );
 }
 
