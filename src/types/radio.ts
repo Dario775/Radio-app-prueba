@@ -39,6 +39,7 @@ export interface AudioPreferences {
     bufferSize: 'small' | 'medium' | 'large';
     sleepTimer: number | null;
     autoPlay: boolean;
+    newsSource?: 'bbc' | 'clarin' | 'lanacion' | 'infobae';
 }
 
 export interface RadioAlarm {
@@ -47,5 +48,6 @@ export interface RadioAlarm {
     days: number[]; // 0-6
     enabled: boolean;
     smart?: boolean;
+    newsSource?: 'bbc' | 'clarin' | 'lanacion' | 'infobae';
     station: RadioStation;
 }

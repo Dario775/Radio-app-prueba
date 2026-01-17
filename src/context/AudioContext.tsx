@@ -361,21 +361,39 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
     }, [sleepTimer, isPlaying, togglePlay]);
 
     // Smart Alarm Logic: Fetch Weather and Speak
-    const runSmartAlarm = async (station: RadioStation) => {
+    const runSmartAlarm = async (station: RadioStation, newsSource: string = 'bbc') => {
         try {
             // 1. Get location and weather (Free API, open-meteo)
             const weatherRes = await fetch('https://api.open-meteo.com/v1/forecast?latitude=-34.6037&longitude=-58.3816&current_weather=true');
             const weatherData = await weatherRes.json();
             const temp = Math.round(weatherData.current_weather.temperature);
 
-            // 2. Get News Headlines (BBC Mundo via rss2json for CORS)
+            // 2. Get News Headlines Dynamic
             let newsText = "";
+            let feedUrl = "";
+
+            switch (newsSource) {
+                case 'clarin':
+                    feedUrl = 'https://www.clarin.com/rss/lo-ultimo/';
+                    break;
+                case 'lanacion':
+                    feedUrl = 'https://www.lanacion.com.ar/arc/outboundfeeds/rss/?outputType=xml&type=137'; // General
+                    break;
+                case 'infobae':
+                    feedUrl = 'https://www.infobae.com/feeds/rss/';
+                    break;
+                default: // bbc
+                    feedUrl = 'https://feeds.bbci.co.uk/mundo/rss.xml';
+            }
+
             try {
-                const newsRes = await fetch('https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Ffeeds.bbci.co.uk%2Fmundo%2Frss.xml');
+                // Use rss2json to bridge standard RSS to JSON (free tier limits apply, but sufficient for personal use)
+                const newsRes = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feedUrl)}`);
                 const newsData = await newsRes.json();
                 if (newsData.status === 'ok' && newsData.items) {
                     const headlines = newsData.items.slice(0, 3).map((item: any) => item.title).join('. ');
-                    newsText = `Aquí tienes las noticias destacadas: ${headlines}.`;
+                    const sourceName = newsSource === 'bbc' ? 'BBC Mundo' : newsSource === 'lanacion' ? 'La Nación' : newsSource.charAt(0).toUpperCase() + newsSource.slice(1);
+                    newsText = `Aquí tienes los titulares de ${sourceName}: ${headlines}.`;
                 }
             } catch (e) {
                 console.warn('News fetch failed', e);
@@ -394,28 +412,26 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
 
             const utterance = new SpeechSynthesisUtterance(fullText);
             utterance.lang = 'es-ES';
-            utterance.rate = 0.95; // Slightly faster natural pace
+            utterance.rate = 0.95;
 
-            // Ensure audio context is unlocked/ready before speaking if possible (browser quirk)
-            window.speechSynthesis.cancel(); // Clear queue
+            window.speechSynthesis.cancel();
             window.speechSynthesis.speak(utterance);
 
             utterance.onend = () => {
                 playStation(station);
             };
 
-            // Fallback safety if speech fails or hangs
             setTimeout(() => {
                 if (!isPlaying && window.speechSynthesis.speaking) {
                     // let it finish
                 } else if (!isPlaying) {
                     playStation(station);
                 }
-            }, 15000); // 15s max waiting time
+            }, 15000);
 
         } catch (err) {
             console.error('Smart alarm failed:', err);
-            playStation(station); // Fallback to just radio
+            playStation(station);
         }
     };
 
@@ -429,7 +445,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
             const stored = localStorage.getItem('radio_alarms');
             if (!stored) return;
 
-            const alarms: Array<{ id: string; enabled: boolean; time: string; days: number[]; station: RadioStation; smart?: boolean }> = JSON.parse(stored);
+            const alarms: Array<RadioAlarm> = JSON.parse(stored);
             const activeAlarm = alarms.find(a =>
                 a.enabled &&
                 a.time === currentTime &&
@@ -454,7 +470,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
 
                     // Trigger Smart or Standard
                     if (activeAlarm.smart) {
-                        runSmartAlarm(activeAlarm.station);
+                        runSmartAlarm(activeAlarm.station, activeAlarm.newsSource);
                     } else {
                         playStation(activeAlarm.station);
                     }

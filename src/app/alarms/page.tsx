@@ -19,6 +19,7 @@ export default function AlarmsPage() {
     const [selectedDays, setSelectedDays] = useState<number[]>([1, 2, 3, 4, 5]);
     const [selectedStation, setSelectedStation] = useState<RadioStation | null>(null);
     const [smart, setSmart] = useState(false);
+    const [newsSource, setNewsSource] = useState<'bbc' | 'clarin' | 'lanacion' | 'infobae'>('bbc');
 
     React.useEffect(() => {
         if ('Notification' in window && Notification.permission === 'default') {
@@ -37,10 +38,11 @@ export default function AlarmsPage() {
                 time,
                 days: selectedDays,
                 station: selectedStation,
-                smart
+                smart,
+                newsSource
             });
         } else {
-            addAlarm(time, selectedDays, selectedStation, smart);
+            addAlarm(time, selectedDays, selectedStation, smart, newsSource);
         }
 
         setIsAdding(false);
@@ -55,6 +57,7 @@ export default function AlarmsPage() {
         setSelectedDays(alarm.days);
         setSelectedStation(alarm.station);
         setSmart(!!alarm.smart);
+        setNewsSource(alarm.newsSource || 'bbc');
         setIsAdding(true);
     };
 
@@ -64,6 +67,7 @@ export default function AlarmsPage() {
         setSelectedDays([1, 2, 3, 4, 5]);
         setSelectedStation(allStations[0] || null);
         setSmart(false);
+        setNewsSource('bbc');
         setIsAdding(true);
     };
 
@@ -250,6 +254,29 @@ export default function AlarmsPage() {
                                     <div className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform duration-300 ${smart ? 'translate-x-5' : 'translate-x-0'}`} />
                                 </button>
                             </div>
+
+                            {smart && (
+                                <div className="space-y-2 animate-fade-in">
+                                    <label className="block text-xs text-[var(--text-muted)] uppercase font-bold tracking-wider">Fuente de Noticias</label>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        {[
+                                            { id: 'bbc', name: 'BBC Mundo' },
+                                            { id: 'clarin', name: 'Clarín' },
+                                            { id: 'lanacion', name: 'La Nación' },
+                                            { id: 'infobae', name: 'Infobae' }
+                                        ].map((src) => (
+                                            <button
+                                                key={src.id}
+                                                type="button"
+                                                onClick={() => setNewsSource(src.id as any)}
+                                                className={`px-3 py-2 rounded-lg text-xs font-bold transition-all border ${newsSource === src.id ? 'bg-purple-500/20 text-purple-400 border-purple-500/50' : 'bg-white/5 text-[var(--text-muted)] border-transparent hover:bg-white/10'}`}
+                                            >
+                                                {src.name}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
 
                             <div className="flex gap-4 pt-4">
                                 <button
