@@ -7,6 +7,7 @@ import { useAudio } from '@/context/AudioContext';
 import type { RadioStation, AudioPreferences } from '@/types/radio';
 import Visualizer from '@/components/Visualizer';
 import CastButton from '@/components/CastButton';
+import EqualizerPanel from '@/components/EqualizerPanel';
 
 interface PlayerViewProps {
     station?: RadioStation;
@@ -30,6 +31,8 @@ export default function PlayerView({ station, stationuuid, relatedStations, onOp
     const [imageError, setImageError] = useState(false);
     const [timeLeft, setTimeLeft] = useState<number | null>(null);
     const { toggleFavorite, isFavorite } = useFavorites();
+    const [showEQ, setShowEQ] = useState(false);
+    const [isInmersive, setIsInmersive] = useState(false);
 
     const defaultImage = 'data:image/svg+xml,' + encodeURIComponent(`
     <svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400">
@@ -182,7 +185,28 @@ export default function PlayerView({ station, stationuuid, relatedStations, onOp
                         </Link>
                     )}
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 transition-opacity duration-500" style={{ opacity: isInmersive ? 0.3 : 1 }}>
+                        <button
+                            onClick={() => setIsInmersive(!isInmersive)}
+                            className={`p-3 rounded-full glass transition-all ${isInmersive ? 'text-[var(--primary-dynamic)] bg-[var(--primary-dynamic)]/10 border-[var(--primary-dynamic)]' : 'hover:bg-white/10'}`}
+                            title="Modo Inmersivo"
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                        </button>
+
+                        <button
+                            onClick={() => setShowEQ(true)}
+                            className="p-3 rounded-full glass hover:bg-white/10 transition-colors"
+                            title="Ecualizador"
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                            </svg>
+                        </button>
+
                         <CastButton />
                         <button
                             onClick={handleShare}
@@ -206,9 +230,9 @@ export default function PlayerView({ station, stationuuid, relatedStations, onOp
                 </header>
 
                 {/* Main content */}
-                <main className="flex-1 flex flex-col items-center justify-center px-6 pb-20">
+                <main className={`flex-1 flex flex-col items-center justify-center px-6 transition-all duration-700 ${isInmersive ? 'pb-4' : 'pb-20'}`}>
                     {/* Album art */}
-                    <div className="relative mb-8">
+                    <div className={`relative transition-all duration-700 ${isInmersive ? 'mb-4 scale-75' : 'mb-8'}`}>
                         <div
                             className={`absolute inset-0 rounded-3xl blur-2xl transition-all duration-700 ${isPlaying ? 'animate-pulse-ring' : ''}`}
                             style={{ backgroundColor: 'var(--primary-dynamic)', opacity: 0.3 }}
@@ -247,7 +271,7 @@ export default function PlayerView({ station, stationuuid, relatedStations, onOp
                     </div>
 
                     {/* Station info */}
-                    <div className="text-center mb-6 max-w-md w-full">
+                    <div className={`text-center mb-6 max-w-md w-full transition-all duration-700 ${isInmersive ? 'opacity-0 scale-90 h-0 overflow-hidden mb-0' : 'opacity-100'}`}>
                         <h1 className="text-2xl md:text-3xl font-bold mb-2 line-clamp-2">{currentStation.name}</h1>
                         <div className="flex flex-col items-center gap-2">
                             <p className="text-[var(--text-muted)] flex items-center justify-center gap-2">
@@ -288,7 +312,7 @@ export default function PlayerView({ station, stationuuid, relatedStations, onOp
                     </div>
 
                     {/* Alternative Sources */}
-                    {relatedStations && relatedStations.length > 0 && (
+                    {!isInmersive && relatedStations && relatedStations.length > 0 && (
                         <div className="mb-8 w-full max-w-sm">
                             <div className="text-xs text-[var(--text-muted)] text-center mb-2">Canales Disponibles</div>
                             <button
@@ -389,32 +413,41 @@ export default function PlayerView({ station, stationuuid, relatedStations, onOp
                 </main>
 
                 {/* Info footer */}
-                <footer className="glass-dark border-t border-white/5 p-4 mb-20">
-                    <div className="max-w-md mx-auto flex items-center justify-between text-sm text-[var(--text-muted)]">
-                        <div className="flex items-center gap-4">
-                            <span className="flex items-center gap-1">
-                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-                                </svg>
-                                {currentStation.votes}
-                            </span>
+                {!isInmersive && (
+                    <footer className="glass-dark border-t border-white/5 p-4 mb-20">
+                        <div className="max-w-md mx-auto flex items-center justify-between text-sm text-[var(--text-muted)]">
+                            <div className="flex items-center gap-4">
+                                <span className="flex items-center gap-1">
+                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                                    </svg>
+                                    {currentStation.votes}
+                                </span>
+                            </div>
+                            {currentStation.homepage && (
+                                <a
+                                    href={currentStation.homepage}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-1 hover:text-[var(--primary)] transition-colors"
+                                >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                    </svg>
+                                    Sitio Web
+                                </a>
+                            )}
                         </div>
-                        {currentStation.homepage && (
-                            <a
-                                href={currentStation.homepage}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center gap-1 hover:text-[var(--primary)] transition-colors"
-                            >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                                </svg>
-                                Sitio Web
-                            </a>
-                        )}
-                    </div>
-                </footer>
+                    </footer>
+                )}
             </div>
+
+            <EqualizerPanel isOpen={showEQ} onClose={() => setShowEQ(false)} />
+
+            <style jsx>{`
+                .animate-fade-in { animation: fadeIn 0.5s ease-out; }
+                @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+            `}</style>
         </div>
     );
 }

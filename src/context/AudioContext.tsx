@@ -9,6 +9,8 @@ interface AudioContextType {
     isLoading: boolean;
     volume: number;
     dominantColor: string;
+    eqGains: number[];
+    setEqGain: (bandIndex: number, gain: number) => void;
     playStation: (station: RadioStation) => void;
     togglePlay: () => void;
     setVolume: (volume: number) => void;
@@ -23,15 +25,27 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
     const [isLoading, setIsLoading] = useState(false);
     const [volume, setVolume] = useState(0.8);
     const [dominantColor, setDominantColor] = useState('#00bdc7');
+    const [eqGains, setEqGains] = useState<number[]>([0, 0, 0, 0, 0]);
     const audioRef = useRef<HTMLAudioElement>(null);
+    const audioCtxRef = useRef<AudioContext | null>(null);
+    const sourceRef = useRef<MediaElementAudioSourceNode | null>(null);
+    const filtersRef = useRef<BiquadFilterNode[]>([]);
 
     const togglePlay = useCallback(() => {
         if (!audioRef.current || !currentStation) return;
+
+        // Initialize Audio Context on user interaction
+        if (!audioCtxRef.current) {
+            initAudioEngine();
+        }
 
         if (isPlaying) {
             audioRef.current.pause();
             setIsPlaying(false);
         } else {
+            if (audioCtxRef.current?.state === 'suspended') {
+                audioCtxRef.current.resume();
+            }
             setIsLoading(true);
             audioRef.current.play()
                 .then(() => setIsPlaying(true))
@@ -46,6 +60,11 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
             return;
         }
 
+        // Initialize Audio Context on user interaction
+        if (!audioCtxRef.current) {
+            initAudioEngine();
+        }
+
         setCurrentStation(station);
         setIsLoading(true);
         setIsPlaying(false);
@@ -53,6 +72,9 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
         // Wait for state update and audio element to be ready
         setTimeout(() => {
             if (audioRef.current) {
+                if (audioCtxRef.current?.state === 'suspended') {
+                    audioCtxRef.current.resume();
+                }
                 audioRef.current.play()
                     .then(() => setIsPlaying(true))
                     .catch(e => {
@@ -162,6 +184,79 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
         };
     }, [currentStation]);
 
+    const initAudioEngine = () => {
+        if (!audioRef.current || audioCtxRef.current) return;
+
+        const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+        audioCtxRef.current = ctx;
+
+        // Frequencies for a 5-band EQ
+        const frequencies = [60, 230, 910, 3600, 14000];
+        const filters = frequencies.map(freq => {
+            const filter = ctx.createBiquadFilter();
+            filter.type = 'peaking';
+            filter.frequency.value = freq;
+            filter.Q.value = 1;
+            filter.gain.value = 0;
+            return filter;
+        });
+
+        filtersRef.current = filters;
+
+        try {
+            const source = ctx.createMediaElementSource(audioRef.current);
+            sourceRef.current = source;
+
+            // Connect filters in chain
+            source.connect(filters[0]);
+            for (let i = 0; i < filters.length - 1; i++) {
+                filters[i].connect(filters[i + 1]);
+            }
+            filters[filters.length - 1].connect(ctx.destination);
+
+            // Apply current gains
+            eqGains.forEach((gain, i) => {
+                if (filtersRef.current[i]) {
+                    filtersRef.current[i].gain.value = gain;
+                }
+            });
+        } catch (err) {
+            console.error('EQ Initialization error:', err);
+        }
+    };
+
+    const setEqGain = (bandIndex: number, gain: number) => {
+        const newGains = [...eqGains];
+        newGains[bandIndex] = gain;
+        setEqGains(newGains);
+
+        if (filtersRef.current[bandIndex]) {
+            filtersRef.current[bandIndex].gain.value = gain;
+        }
+
+        // Save to localStorage
+        localStorage.setItem('radio_eq_gains', JSON.stringify(newGains));
+    };
+
+    // Load EQ gains from localStorage
+    useEffect(() => {
+        const stored = localStorage.getItem('radio_eq_gains');
+        if (stored) {
+            try {
+                const parsed = JSON.parse(stored);
+                setEqGains(parsed);
+                // If filters are already active, apply immediately
+                parsed.forEach((gain: number, i: number) => {
+                    if (filtersRef.current[i]) {
+                        filtersRef.current[i].gain.value = gain;
+                    }
+                });
+            } catch (e) {
+                console.error('Failed to parse EQ gains', e);
+            }
+        }
+    }, []);
+
     // Alarm checking logic
     useEffect(() => {
         const checkAlarms = () => {
@@ -210,6 +305,8 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
             isLoading,
             volume,
             dominantColor,
+            eqGains,
+            setEqGain,
             playStation,
             togglePlay,
             setVolume,
