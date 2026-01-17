@@ -7,8 +7,8 @@ export default function manifest(): MetadataRoute.Manifest {
         description: 'Listen to thousands of live radio stations worldwide.',
         start_url: '/',
         display: 'standalone',
-        background_color: '#0a0a0b',
-        theme_color: '#00bdc7',
+        background_color: '#0a0a0a',
+        theme_color: '#0a0a0a',
         icons: [
             {
                 src: '/favicon.ico',
