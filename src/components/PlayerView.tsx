@@ -33,6 +33,7 @@ export default function PlayerView({ station, stationuuid, relatedStations, onOp
     const { toggleFavorite, isFavorite } = useFavorites();
     const [showEQ, setShowEQ] = useState(false);
     const [isInmersive, setIsInmersive] = useState(false);
+    const [showMenu, setShowMenu] = useState(false);
 
     const defaultImage = 'data:image/svg+xml,' + encodeURIComponent(`
     <svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400">
@@ -185,21 +186,10 @@ export default function PlayerView({ station, stationuuid, relatedStations, onOp
                         </Link>
                     )}
 
-                    <div className="flex items-center gap-2 transition-opacity duration-500" style={{ opacity: isInmersive ? 0.3 : 1 }}>
-                        <button
-                            onClick={() => setIsInmersive(!isInmersive)}
-                            className={`p-3 rounded-full glass transition-all ${isInmersive ? 'text-[var(--primary-dynamic)] bg-[var(--primary-dynamic)]/10 border-[var(--primary-dynamic)]' : 'hover:bg-white/10'}`}
-                            title="Modo Inmersivo"
-                        >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                            </svg>
-                        </button>
-
+                    <div className="flex items-center gap-1.5 transition-opacity duration-500" style={{ opacity: isInmersive ? 0.3 : 1 }}>
                         <button
                             onClick={() => setShowEQ(true)}
-                            className="p-3 rounded-full glass hover:bg-white/10 transition-colors"
+                            className="p-3 rounded-full hover:bg-white/10 text-white/70 transition-colors"
                             title="Ecualizador"
                         >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -207,25 +197,69 @@ export default function PlayerView({ station, stationuuid, relatedStations, onOp
                             </svg>
                         </button>
 
-                        <CastButton />
-                        <button
-                            onClick={handleShare}
-                            className="p-3 rounded-full glass hover:bg-white/10 transition-colors"
-                            title="Compartir emisora"
-                        >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                            </svg>
-                        </button>
-
                         <button
                             onClick={() => toggleFavorite(currentStation)}
-                            className={`p-3 rounded-full glass hover:bg-white/10 transition-colors ${isFavorite(currentStation.stationuuid) ? 'text-red-500' : ''}`}
+                            className={`p-3 rounded-full hover:bg-white/10 transition-colors ${isFavorite(currentStation.stationuuid) ? 'text-red-500' : 'text-white/70'}`}
                         >
                             <svg className="w-5 h-5" fill={isFavorite(currentStation.stationuuid) ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                             </svg>
                         </button>
+
+                        {/* More Menu */}
+                        <div className="relative">
+                            <button
+                                onClick={() => setShowMenu(!showMenu)}
+                                className={`p-3 rounded-full hover:bg-white/10 transition-colors ${showMenu ? 'bg-white/10 text-white' : 'text-white/70'}`}
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                                </svg>
+                            </button>
+
+                            {showMenu && (
+                                <>
+                                    <div className="fixed inset-0 z-40" onClick={() => setShowMenu(false)} />
+                                    <div className="absolute right-0 mt-2 w-56 bg-[#1a1a1a]/90 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden shadow-2xl z-50 animate-in fade-in slide-in-from-top-2">
+                                        <div className="p-2 space-y-1">
+                                            <button
+                                                onClick={() => { setIsInmersive(!isInmersive); setShowMenu(false); }}
+                                                className="w-full flex items-center justify-between px-4 py-3 rounded-xl hover:bg-white/5 transition-colors group"
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <svg className="w-5 h-5 text-white/50 group-hover:text-[var(--primary-dynamic)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                    </svg>
+                                                    <span className="text-sm font-medium">Modo Zen</span>
+                                                </div>
+                                                <div className={`w-2 h-2 rounded-full ${isInmersive ? 'bg-[var(--primary-dynamic)]' : 'bg-transparent'}`} />
+                                            </button>
+
+                                            <div className="px-4 py-2 flex items-center justify-between hover:bg-white/5 rounded-xl transition-colors group">
+                                                <div className="flex items-center gap-3">
+                                                    <svg className="w-5 h-5 text-white/50 group-hover:text-[var(--primary-dynamic)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.111 16.404a5.5 5.5 0 117.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.318 6.318c5.858-5.857 15.355-5.857 21.213 0" />
+                                                    </svg>
+                                                    <span className="text-sm font-medium">Emitir</span>
+                                                </div>
+                                                <CastButton />
+                                            </div>
+
+                                            <button
+                                                onClick={() => { handleShare(); setShowMenu(false); }}
+                                                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 transition-colors group"
+                                            >
+                                                <svg className="w-5 h-5 text-white/50 group-hover:text-[var(--primary-dynamic)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                                                </svg>
+                                                <span className="text-sm font-medium">Compartir</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+                        </div>
                     </div>
                 </header>
 
