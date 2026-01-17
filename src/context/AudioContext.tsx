@@ -11,6 +11,7 @@ interface AudioContextType {
     dominantColor: string;
     eqGains: number[];
     setEqGain: (bandIndex: number, gain: number) => void;
+    setMultipleEqGains: (gains: number[]) => void;
     playStation: (station: RadioStation) => void;
     togglePlay: () => void;
     setVolume: (volume: number) => void;
@@ -238,6 +239,16 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem('radio_eq_gains', JSON.stringify(newGains));
     };
 
+    const setMultipleEqGains = (newGains: number[]) => {
+        setEqGains(newGains);
+        newGains.forEach((gain, i) => {
+            if (filtersRef.current[i]) {
+                filtersRef.current[i].gain.value = gain;
+            }
+        });
+        localStorage.setItem('radio_eq_gains', JSON.stringify(newGains));
+    };
+
     // Load EQ gains from localStorage
     useEffect(() => {
         const stored = localStorage.getItem('radio_eq_gains');
@@ -307,6 +318,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
             dominantColor,
             eqGains,
             setEqGain,
+            setMultipleEqGains,
             playStation,
             togglePlay,
             setVolume,
