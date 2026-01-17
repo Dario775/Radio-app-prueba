@@ -11,15 +11,15 @@ interface Genre {
 }
 
 const genres: Genre[] = [
-    { id: 'all', label: 'For You', icon: 'M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z', color: '#00bdc7' },
-    { id: 'pop', label: 'Pop Hits', icon: 'M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z', color: '#ff2d55' },
+    { id: 'all', label: 'Para Ti', icon: 'M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z', color: '#00bdc7' },
+    { id: 'pop', label: 'Éxitos Pop', icon: 'M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z', color: '#ff2d55' },
     { id: 'rock', label: 'Rock', icon: 'M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z', color: '#ff9500' },
     { id: 'jazz', label: 'Jazz', icon: 'M21 3l-6 1.45V14.65c-.48-.23-1.02-.35-1.58-.35-1.93 0-3.5 1.57-3.5 3.5s1.57 3.5 3.5 3.5 3.5-1.57 3.5-3.5V6l4-1V3z', color: '#5856d6' },
-    { id: 'classical', label: 'Classics', icon: 'M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V3h6v4h-4V3z', color: '#af52de' },
-    { id: 'electronic', label: 'Electronic', icon: 'M12 1a9 9 0 00-9 9v7c0 1.66 1.34 3 3 3h3v-8H5v-2a7 7 0 0114 0v2h-4v8h3c1.66 0 3-1.34 3-3v-7a9 9 0 00-9-9z', color: '#34c759' },
+    { id: 'classical', label: 'Clásica', icon: 'M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V3h6v4h-4V3z', color: '#af52de' },
+    { id: 'electronic', label: 'Electrónica', icon: 'M12 1a9 9 0 00-9 9v7c0 1.66 1.34 3 3 3h3v-8H5v-2a7 7 0 0114 0v2h-4v8h3c1.66 0 3-1.34 3-3v-7a9 9 0 00-9-9z', color: '#34c759' },
     { id: 'hiphop', label: 'Hip Hop', icon: 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z', color: '#ff3b30' },
-    { id: 'news', label: 'News', icon: 'M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 12H7v2h10v-2zm0-4H7v2h10v-2zm0-4H7v2h10V7z', color: '#007aff' },
-    { id: 'sports', label: 'Sports', icon: 'M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z', color: '#5ac8fa' },
+    { id: 'news', label: 'Noticias', icon: 'M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 12H7v2h10v-2zm0-4H7v2h10v-2zm0-4H7v2h10V7z', color: '#007aff' },
+    { id: 'sports', label: 'Deportes', icon: 'M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z', color: '#5ac8fa' },
 ];
 
 interface GenreSelectorProps {
