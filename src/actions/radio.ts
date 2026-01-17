@@ -102,12 +102,22 @@ export async function getStationsByLocation(countryCode?: string, state?: string
 
         if (countryCode) options.countrycode = countryCode;
         if (state) options.state = state;
-        // If we have full country name, prefer using the bycountry endpoint or search if combined with state
-        if (country && !state) {
-            const { getStationsByCountry } = await import('@/lib/radio-api');
-            return await getStationsByCountry(country, 50);
+
+        // Strategy: Use specific endpoints for strict filtering when possible
+
+        // 1. Country + State (Most specific)
+        if (country && state) {
+            const { getStationsByState } = await import('@/lib/radio-api');
+            return await getStationsByState(country, state);
         }
 
+        // 2. Country only (Broad)
+        if (country && !state) {
+            const { getStationsByCountry } = await import('@/lib/radio-api');
+            return await getStationsByCountry(country);
+        }
+
+        // 3. Fallback to generic search
         const results = await getStations(options);
         return results.filter(s => s.url_resolved && s.lastcheckok === 1);
     } catch (error) {
@@ -137,11 +147,10 @@ export async function getStatesForCountry(country: string) {
     }
 }
 
-export async function getArgentineStations(limit: number = 50): Promise<RadioStation[]> {
+export async function getArgentineStations(): Promise<RadioStation[]> {
     try {
-        // We import the new function we just added to lib/radio-api
         const { getStationsByCountry } = await import('@/lib/radio-api');
-        const results = await getStationsByCountry('Argentina', limit);
+        const results = await getStationsByCountry('Argentina');
         return results.filter(s => s.url_resolved && s.lastcheckok === 1);
     } catch (error) {
         console.error('Error fetching Argentine stations:', error);

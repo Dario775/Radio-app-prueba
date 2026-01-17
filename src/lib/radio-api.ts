@@ -69,14 +69,26 @@ export async function getStations(options: FetchStationsOptions): Promise<RadioS
     return fetchWithFallback<RadioStation[]>('/json/stations/search', params);
 }
 
-export async function getStationsByCountry(country: string, limit: number = 100): Promise<RadioStation[]> {
+export async function getStationsByCountry(country: string): Promise<RadioStation[]> {
     const params: Record<string, string> = {
-        limit: limit.toString(),
         order: 'clickcount',
         reverse: 'true',
         hidebroken: 'true'
     };
     return fetchWithFallback<RadioStation[]>(`/json/stations/bycountry/${encodeURIComponent(country)}`, params);
+}
+
+export async function getStationsByState(country: string, state: string): Promise<RadioStation[]> {
+    const params: Record<string, string> = {
+        order: 'clickcount',
+        reverse: 'true',
+        hidebroken: 'true',
+        country: country
+    };
+    // The endpoint is strictly by state, but filtering by country in params helps accuracy if supported, 
+    // or we just trust the state name is unique enough or the API handles it. 
+    // RadioBrowser API typically uses /json/stations/bystate/{searchterm}
+    return fetchWithFallback<RadioStation[]>(`/json/stations/bystate/${encodeURIComponent(state)}`, params);
 }
 
 export async function getCountries(): Promise<{ name: string; stationcount: number }[]> {
