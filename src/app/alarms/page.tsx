@@ -18,6 +18,7 @@ export default function AlarmsPage() {
     const [time, setTime] = useState('07:00');
     const [selectedDays, setSelectedDays] = useState<number[]>([1, 2, 3, 4, 5]);
     const [selectedStation, setSelectedStation] = useState<RadioStation | null>(null);
+    const [smart, setSmart] = useState(false);
 
     React.useEffect(() => {
         if ('Notification' in window && Notification.permission === 'default') {
@@ -35,10 +36,11 @@ export default function AlarmsPage() {
             updateAlarm(editingAlarm.id, {
                 time,
                 days: selectedDays,
-                station: selectedStation
+                station: selectedStation,
+                smart
             });
         } else {
-            addAlarm(time, selectedDays, selectedStation);
+            addAlarm(time, selectedDays, selectedStation, smart);
         }
 
         setIsAdding(false);
@@ -52,6 +54,7 @@ export default function AlarmsPage() {
         setTime(alarm.time);
         setSelectedDays(alarm.days);
         setSelectedStation(alarm.station);
+        setSmart(!!alarm.smart);
         setIsAdding(true);
     };
 
@@ -60,6 +63,7 @@ export default function AlarmsPage() {
         setTime('07:00');
         setSelectedDays([1, 2, 3, 4, 5]);
         setSelectedStation(allStations[0] || null);
+        setSmart(false);
         setIsAdding(true);
     };
 
@@ -126,7 +130,7 @@ export default function AlarmsPage() {
                                             />
                                             <span className="font-semibold truncate max-w-[150px]">{alarm.station.name}</span>
                                         </div>
-                                        <div className="flex gap-1">
+                                        <div className="flex gap-1 items-center">
                                             {DAYS.map((day, i) => (
                                                 <span
                                                     key={day}
@@ -135,6 +139,9 @@ export default function AlarmsPage() {
                                                     {day[0]}
                                                 </span>
                                             ))}
+                                            {alarm.smart && (
+                                                <span className="ml-2 px-1.5 py-0.5 rounded-md bg-purple-500/20 text-purple-400 text-[8px] font-black uppercase tracking-widest border border-purple-500/30">IA</span>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
@@ -221,6 +228,27 @@ export default function AlarmsPage() {
                                         ))}
                                     </div>
                                 )}
+                            </div>
+
+                            <div className="flex items-center justify-between p-4 bg-purple-500/5 rounded-2xl border border-purple-500/20">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-purple-500/20 rounded-lg">
+                                        <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-bold text-white">Despertar Inteligente</p>
+                                        <p className="text-[10px] text-purple-400/70">IA leerá clima y noticias antes de la radio</p>
+                                    </div>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => setSmart(!smart)}
+                                    className={`relative w-10 h-5 rounded-full transition-colors duration-300 ${smart ? 'bg-purple-500' : 'bg-gray-700'}`}
+                                >
+                                    <div className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform duration-300 ${smart ? 'translate-x-5' : 'translate-x-0'}`} />
+                                </button>
                             </div>
 
                             <div className="flex gap-4 pt-4">

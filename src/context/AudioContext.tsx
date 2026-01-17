@@ -16,6 +16,10 @@ interface AudioContextType {
     togglePlay: () => void;
     setVolume: (volume: number) => void;
     audioRef: React.RefObject<HTMLAudioElement | null>;
+    isRecording: boolean;
+    recordingDuration: number;
+    startRecording: () => void;
+    stopRecording: () => void;
 }
 
 const AudioContext = createContext<AudioContextType | undefined>(undefined);
@@ -27,10 +31,15 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
     const [volume, setVolume] = useState(0.8);
     const [dominantColor, setDominantColor] = useState('#00bdc7');
     const [eqGains, setEqGains] = useState<number[]>([0, 0, 0, 0, 0]);
+    const [isRecording, setIsRecording] = useState(false);
+    const [recordingDuration, setRecordingDuration] = useState(0);
     const audioRef = useRef<HTMLAudioElement>(null);
     const audioCtxRef = useRef<AudioContext | null>(null);
     const sourceRef = useRef<MediaElementAudioSourceNode | null>(null);
     const filtersRef = useRef<BiquadFilterNode[]>([]);
+    const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+    const chunksRef = useRef<Blob[]>([]);
+    const timerRef = useRef<NodeJS.Timeout | null>(null);
 
     const togglePlay = useCallback(() => {
         if (!audioRef.current || !currentStation) return;
@@ -249,6 +258,55 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem('radio_eq_gains', JSON.stringify(newGains));
     };
 
+    const startRecording = () => {
+        if (!audioRef.current || isRecording) return;
+
+        try {
+            const stream = (audioRef.current as any).captureStream ?
+                (audioRef.current as any).captureStream() :
+                (audioRef.current as any).mozCaptureStream();
+
+            const recorder = new MediaRecorder(stream);
+            mediaRecorderRef.current = recorder;
+            chunksRef.current = [];
+
+            recorder.ondataavailable = (e) => {
+                if (e.data.size > 0) chunksRef.current.push(e.data);
+            };
+
+            recorder.onstop = () => {
+                const blob = new Blob(chunksRef.current, { type: 'audio/webm' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${currentStation?.name || 'Radio'}_${new Date().getTime()}.webm`;
+                a.click();
+                URL.revokeObjectURL(url);
+                setIsRecording(false);
+                setRecordingDuration(0);
+            };
+
+            recorder.start();
+            setIsRecording(true);
+            setRecordingDuration(0);
+
+            timerRef.current = setInterval(() => {
+                setRecordingDuration(prev => prev + 1);
+            }, 1000);
+
+        } catch (err) {
+            console.error('Failed to start recording:', err);
+            alert('La grabación no es compatible con este stream o navegador.');
+        }
+    };
+
+    const stopRecording = () => {
+        if (mediaRecorderRef.current && isRecording) {
+            mediaRecorderRef.current.stop();
+            if (timerRef.current) clearInterval(timerRef.current);
+        }
+    };
+
     // Load EQ gains from localStorage
     useEffect(() => {
         const stored = localStorage.getItem('radio_eq_gains');
@@ -268,6 +326,30 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
         }
     }, []);
 
+    // Smart Alarm Logic: Fetch Weather and Speak
+    const runSmartAlarm = async (station: RadioStation) => {
+        try {
+            // 1. Get location and weather (Free API, no key needed) - Defaulting to user region or generic for demo
+            const weatherRes = await fetch('https://api.open-meteo.com/v1/forecast?latitude=-34.6037&longitude=-58.3816&current_weather=true');
+            const weatherData = await weatherRes.json();
+            const temp = weatherData.current_weather.temperature;
+
+            const msg = new SpeechSynthesisUtterance();
+            msg.text = `Buenos días. Son las ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}. La temperatura actual es de ${temp} grados. Iniciando tu emisora: ${station.name}. Que tengas un excelente día.`;
+            msg.lang = 'es-ES';
+            msg.rate = 0.9;
+
+            window.speechSynthesis.speak(msg);
+
+            msg.onend = () => {
+                playStation(station);
+            };
+        } catch (err) {
+            console.error('Smart alarm failed:', err);
+            playStation(station); // Fallback to just radio
+        }
+    };
+
     // Alarm checking logic
     useEffect(() => {
         const checkAlarms = () => {
@@ -278,7 +360,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
             const stored = localStorage.getItem('radio_alarms');
             if (!stored) return;
 
-            const alarms: Array<{ id: string; enabled: boolean; time: string; days: number[]; station: RadioStation }> = JSON.parse(stored);
+            const alarms: Array<{ id: string; enabled: boolean; time: string; days: number[]; station: RadioStation; smart?: boolean }> = JSON.parse(stored);
             const activeAlarm = alarms.find(a =>
                 a.enabled &&
                 a.time === currentTime &&
@@ -291,21 +373,27 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
                 const todayStr = now.toDateString() + currentTime;
 
                 if (lastTriggered !== todayStr) {
-                    playStation(activeAlarm.station);
                     sessionStorage.setItem(`alarm_last_${activeAlarm.id}`, todayStr);
 
-                    // Show notification/alert
+                    // Show notification
                     if ('Notification' in window && Notification.permission === 'granted') {
                         new Notification('Radio Alarm', {
                             body: `Starting ${activeAlarm.station.name}`,
                             icon: activeAlarm.station.favicon || '/favicon.ico'
                         });
                     }
+
+                    // Trigger Smart or Standard
+                    if (activeAlarm.smart) {
+                        runSmartAlarm(activeAlarm.station);
+                    } else {
+                        playStation(activeAlarm.station);
+                    }
                 }
             }
         };
 
-        const interval = setInterval(checkAlarms, 30000); // Check every 30s
+        const interval = setInterval(checkAlarms, 10000); // Check every 10s
         return () => clearInterval(interval);
     }, [playStation]);
 
@@ -322,7 +410,11 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
             playStation,
             togglePlay,
             setVolume,
-            audioRef
+            audioRef,
+            isRecording,
+            recordingDuration,
+            startRecording,
+            stopRecording
         }}>
             {children}
             {/* The actual hidden audio element */}

@@ -8,6 +8,7 @@ import type { RadioStation, AudioPreferences } from '@/types/radio';
 import Visualizer from '@/components/Visualizer';
 import CastButton from '@/components/CastButton';
 import EqualizerPanel from '@/components/EqualizerPanel';
+import CarMode from '@/components/CarMode';
 
 interface PlayerViewProps {
     station?: RadioStation;
@@ -25,7 +26,11 @@ export default function PlayerView({ station, stationuuid, relatedStations, onOp
         setVolume,
         togglePlay,
         playStation,
-        audioRef
+        audioRef,
+        isRecording,
+        recordingDuration,
+        startRecording,
+        stopRecording
     } = useAudio();
 
     const [imageError, setImageError] = useState(false);
@@ -34,6 +39,7 @@ export default function PlayerView({ station, stationuuid, relatedStations, onOp
     const [showEQ, setShowEQ] = useState(false);
     const [isInmersive, setIsInmersive] = useState(false);
     const [showMenu, setShowMenu] = useState(false);
+    const [isCarMode, setIsCarMode] = useState(false);
 
     const defaultImage = 'data:image/svg+xml,' + encodeURIComponent(`
     <svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400">
@@ -234,6 +240,33 @@ export default function PlayerView({ station, stationuuid, relatedStations, onOp
                                                     <span className="text-sm font-medium">Modo Zen</span>
                                                 </div>
                                                 <div className={`w-2 h-2 rounded-full ${isInmersive ? 'bg-[var(--primary-dynamic)]' : 'bg-transparent'}`} />
+                                            </button>
+
+                                            <button
+                                                onClick={() => { setIsCarMode(true); setShowMenu(false); }}
+                                                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 transition-colors group"
+                                            >
+                                                <svg className="w-5 h-5 text-white/50 group-hover:text-[var(--primary-dynamic)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                                                </svg>
+                                                <span className="text-sm font-medium">Modo Conducción</span>
+                                            </button>
+
+                                            <button
+                                                onClick={() => {
+                                                    if (isRecording) stopRecording();
+                                                    else startRecording();
+                                                    setShowMenu(false);
+                                                }}
+                                                className={`w-full flex items-center justify-between px-4 py-3 rounded-xl hover:bg-white/5 transition-colors group ${isRecording ? 'text-red-500' : ''}`}
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <svg className={`w-5 h-5 ${isRecording ? 'animate-pulse' : 'text-white/50 group-hover:text-red-500'}`} fill="currentColor" viewBox="0 0 24 24">
+                                                        <circle cx="12" cy="12" r="8" />
+                                                    </svg>
+                                                    <span className="text-sm font-medium">{isRecording ? 'Detener Grabación' : 'Grabar Transmisión'}</span>
+                                                </div>
+                                                {isRecording && <span className="text-[10px] font-mono font-bold">{Math.floor(recordingDuration / 60)}:{(recordingDuration % 60).toString().padStart(2, '0')}</span>}
                                             </button>
 
                                             <div className="px-4 py-2 flex items-center justify-between hover:bg-white/5 rounded-xl transition-colors group">
@@ -477,6 +510,7 @@ export default function PlayerView({ station, stationuuid, relatedStations, onOp
             </div>
 
             <EqualizerPanel isOpen={showEQ} onClose={() => setShowEQ(false)} />
+            <CarMode isOpen={isCarMode} onClose={() => setIsCarMode(false)} />
 
             <style jsx>{`
                 .animate-fade-in { animation: fadeIn 0.5s ease-out; }

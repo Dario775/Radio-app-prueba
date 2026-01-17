@@ -46,5 +46,6 @@ export interface RadioAlarm {
     time: string; // HH:mm
     days: number[]; // 0-6
     enabled: boolean;
+    smart?: boolean;
     station: RadioStation;
 }

@@ -6,9 +6,11 @@ interface VisualizerProps {
     isPlaying: boolean;
     audioRef?: React.RefObject<HTMLAudioElement | null>;
     color?: string;
+    width?: number;
+    height?: number;
 }
 
-export default function Visualizer({ isPlaying, audioRef, color = 'var(--primary)' }: VisualizerProps) {
+export default function Visualizer({ isPlaying, audioRef, color = 'var(--primary)', width = 160, height = 48 }: VisualizerProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const animationRef = useRef<number>(0);
     const audioContextRef = useRef<AudioContext | null>(null);
@@ -95,9 +97,10 @@ export default function Visualizer({ isPlaying, audioRef, color = 'var(--primary
     return (
         <canvas
             ref={canvasRef}
-            width={160}
-            height={48}
-            className="w-40 h-12 opacity-80"
+            width={width}
+            height={height}
+            className="opacity-80"
+            style={{ width: `${width}px`, height: `${height}px` }}
         />
     );
 }
