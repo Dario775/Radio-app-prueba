@@ -453,35 +453,26 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
             );
 
             if (activeAlarm) {
-                // To avoid multiple triggers in the same minute
-                const lastTriggered = sessionStorage.getItem(`alarm_last_${activeAlarm.id}`);
-                const todayStr = now.toDateString() + currentTime;
+                // Simplified trigger logic for reliability
+                // We use a simple in-memory tracker for the current session to avoid loops
+                // But we allow re-trigger if the page is refreshed
+                const triggerKey = `alarm_${activeAlarm.id}_${now.toDateString() + currentTime}`;
 
-                if (lastTriggered !== todayStr) {
-                    sessionStorage.setItem(`alarm_last_${activeAlarm.id}`, todayStr);
+                // Check if we already triggered this alarm for this specific time today
+                if (!window[triggerKey as any]) {
+                    console.log('⏰ ALARM TRIGGERED!', activeAlarm);
+                    (window as any)[triggerKey] = true;
 
-                    // PWA/Browser Limitation Note:
-                    // Audio autosplay and TTS are often blocked if the user hasn't interacted with the document recently
-                    // or if the app is in the background (mobile OS puts tabs to sleep).
-                    // Native Push Notifications are needed for reliable background wake-up on mobile.
-
+                    // Show notification
                     if ('Notification' in window && Notification.permission === 'granted') {
-                        // This notification might wake up the screen
-                        const n = new Notification('Radio Alarm', {
+                        new Notification('Radio Alarm', {
                             body: `Es hora de: ${activeAlarm.station.name}`,
                             icon: activeAlarm.station.favicon || '/favicon.ico',
-                            tag: 'alarm-trigger',
-                            requireInteraction: true // Keep it visible
+                            requireInteraction: true
                         });
-
-                        // Try to focus window if possible
-                        n.onclick = () => {
-                            window.focus();
-                        };
                     }
 
-                    // Trigger Smart or Standard
-                    // Note: This will only work if the tab is active/foreground in most mobile browsers
+                    // Force play immediately
                     if (activeAlarm.smart) {
                         runSmartAlarm(activeAlarm.station, activeAlarm.newsSource);
                     } else {
