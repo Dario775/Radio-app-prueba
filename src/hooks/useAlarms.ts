@@ -4,11 +4,18 @@ import { useState, useEffect } from 'react';
 import type { RadioAlarm, RadioStation } from '@/types/radio';
 
 export function useAlarms() {
-    const [alarms, setAlarms] = useState<RadioAlarm[]>(() => {
-        if (typeof window === 'undefined') return [];
+    const [alarms, setAlarms] = useState<RadioAlarm[]>([]);
+
+    useEffect(() => {
         const stored = localStorage.getItem('radio_alarms');
-        return stored ? JSON.parse(stored) : [];
-    });
+        if (stored) {
+            try {
+                setAlarms(JSON.parse(stored));
+            } catch (e) {
+                console.error('Failed to parse alarms', e);
+            }
+        }
+    }, []);
 
     const saveAlarms = (newAlarms: RadioAlarm[]) => {
         setAlarms(newAlarms);

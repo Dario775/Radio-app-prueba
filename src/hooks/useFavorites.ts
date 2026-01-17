@@ -4,30 +4,28 @@ import { useState, useEffect, useCallback } from 'react';
 import { RadioStation } from '@/types/radio';
 
 export function useFavorites() {
-    const [favorites, setFavorites] = useState<RadioStation[]>(() => {
-        if (typeof window === 'undefined') return [];
-        const stored = localStorage.getItem('radio_favorites');
-        if (!stored) return [];
-        try { return JSON.parse(stored); } catch { return []; }
-    });
-    const [customRadios, setCustomRadios] = useState<RadioStation[]>(() => {
-        if (typeof window === 'undefined') return [];
-        const stored = localStorage.getItem('radio_custom');
-        if (!stored) return [];
-        try { return JSON.parse(stored); } catch { return []; }
-    });
-    const [recentlyPlayed, setRecentlyPlayed] = useState<RadioStation[]>(() => {
-        if (typeof window === 'undefined') return [];
-        const stored = localStorage.getItem('radio_recent');
-        if (!stored) return [];
-        try { return JSON.parse(stored); } catch { return []; }
-    });
-    const [playCounts, setPlayCounts] = useState<Record<string, number>>(() => {
-        if (typeof window === 'undefined') return {};
-        const stored = localStorage.getItem('radio_play_counts');
-        if (!stored) return {};
-        try { return JSON.parse(stored); } catch { return {}; }
-    });
+    const [favorites, setFavorites] = useState<RadioStation[]>([]);
+    const [customRadios, setCustomRadios] = useState<RadioStation[]>([]);
+    const [recentlyPlayed, setRecentlyPlayed] = useState<RadioStation[]>([]);
+    const [playCounts, setPlayCounts] = useState<Record<string, number>>({});
+
+    useEffect(() => {
+        try {
+            const storedFavs = localStorage.getItem('radio_favorites');
+            if (storedFavs) setFavorites(JSON.parse(storedFavs));
+
+            const storedCustom = localStorage.getItem('radio_custom');
+            if (storedCustom) setCustomRadios(JSON.parse(storedCustom));
+
+            const storedRecent = localStorage.getItem('radio_recent');
+            if (storedRecent) setRecentlyPlayed(JSON.parse(storedRecent));
+
+            const storedCounts = localStorage.getItem('radio_play_counts');
+            if (storedCounts) setPlayCounts(JSON.parse(storedCounts));
+        } catch (e) {
+            console.error('Failed to load favorites/history', e);
+        }
+    }, []);
 
     const toggleFavorite = useCallback((station: RadioStation) => {
         setFavorites(prev => {
