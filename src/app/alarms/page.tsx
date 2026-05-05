@@ -151,68 +151,63 @@ export default function AlarmsPage() {
                         </div>
                     ) : (
                         alarms.map(alarm => (
-                            <div key={alarm.id} className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-5 flex items-center justify-between group hover:border-[var(--primary-dynamic)] transition-all">
-                                <div className="flex items-center gap-5">
-                                    <div className="text-4xl font-bold tabular-nums text-white">
+                            <div key={alarm.id} className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-4 group hover:border-[var(--primary-dynamic)] transition-all">
+                                <div className="flex items-center justify-between gap-4">
+                                    <div className="text-5xl font-bold tabular-nums text-white min-w-[100px]">
                                         {alarm.time}
                                     </div>
-                                    <div className="min-w-0">
+                                    <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-3 mb-2">
                                             <img
                                                 src={alarm.station.favicon || '/favicon.ico'}
-                                                className="w-6 h-6 rounded-lg object-cover"
+                                                className="w-8 h-8 rounded-lg object-cover bg-white/10"
                                                 alt=""
                                             />
-                                            <span className="font-semibold truncate max-w-[150px]">{alarm.station.name}</span>
+                                            <span className="font-bold text-lg truncate">{alarm.station.name}</span>
                                         </div>
-                                        <div className="flex gap-1 items-center flex-wrap">
+                                        <div className="flex gap-2 items-center flex-wrap">
                                             {DAYS.map((day, i) => (
                                                 <span
                                                     key={day}
-                                                    className={`text-[10px] uppercase font-bold ${alarm.days.includes(i) ? 'text-[var(--primary-dynamic)]' : 'text-[var(--text-muted)] opacity-30'}`}
+                                                    className={`text-xs font-bold px-2 py-1 rounded-lg ${alarm.days.includes(i) ? 'bg-[var(--primary-dynamic)]/20 text-[var(--primary-dynamic)]' : 'text-[var(--text-muted)] opacity-30'}`}
                                                 >
                                                     {day[0]}
                                                 </span>
                                             ))}
                                             {alarm.smart && (
-                                                <span className="ml-2 px-1.5 py-0.5 rounded-md bg-purple-500/20 text-purple-400 text-[8px] font-black uppercase tracking-widest border border-purple-500/30">IA</span>
-                                            )}
-                                            {alarm.smart && alarm.newsSource && (
-                                                <span className="ml-1 text-[8px] text-purple-400/60 uppercase">
-                                                    {alarm.newsSource === 'bbc' ? 'BBC' : alarm.newsSource === 'clarin' ? 'Clarin' : alarm.newsSource === 'lanacion' ? 'LN' : 'IB'}
-                                                </span>
+                                                <span className="ml-2 px-2 py-1 rounded-lg bg-purple-500/20 text-purple-400 text-xs font-bold uppercase">IA</span>
                                             )}
                                         </div>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                    <button
-                                        onClick={() => startEditing(alarm)}
-                                        className="p-3 text-[var(--text-muted)] hover:text-[var(--primary-dynamic)] hover:bg-[var(--primary-dynamic)]/10 rounded-xl transition-colors touch-manipulation"
-                                        title="Editar"
-                                    >
-                                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                        </svg>
-                                    </button>
+                                <div className="flex items-center justify-between mt-4 pt-3 border-t border-white/5">
                                     <button
                                         onClick={() => toggleAlarm(alarm.id)}
-                                        className={`relative w-14 h-8 rounded-full transition-colors duration-300 touch-manipulation ${alarm.enabled ? 'bg-green-500' : 'bg-gray-600'}`}
-                                        title={alarm.enabled ? 'Desactivar' : 'Activar'}
+                                        className={`flex-1 py-3 rounded-xl font-bold text-sm transition-colors touch-manipulation ${alarm.enabled ? 'bg-green-500 text-white' : 'bg-gray-700 text-gray-400'}`}
                                     >
-                                        <div className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full transition-transform duration-300 shadow ${alarm.enabled ? 'translate-x-6' : 'translate-x-0'}`} />
+                                        {alarm.enabled ? '✓ ACTIVADA' : '○ ACTIVAR'}
                                     </button>
-                                    <button
-                                        onClick={() => removeAlarm(alarm.id)}
-                                        className="p-3 text-red-500 hover:bg-red-500/20 rounded-xl transition-colors touch-manipulation"
-                                        title="Eliminar"
-                                    >
-                                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                        </svg>
-                                    </button>
+                                    <div className="flex gap-2 ml-3">
+                                        <button
+                                            onClick={() => startEditing(alarm)}
+                                            className="p-3 bg-blue-500/20 text-blue-400 rounded-xl touch-manipulation"
+                                            title="Editar"
+                                        >
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                            </svg>
+                                        </button>
+                                        <button
+                                            onClick={() => removeAlarm(alarm.id)}
+                                            className="p-3 bg-red-500/20 text-red-400 rounded-xl touch-manipulation"
+                                            title="Eliminar"
+                                        >
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
                         ))
                     )}
                 </div>
