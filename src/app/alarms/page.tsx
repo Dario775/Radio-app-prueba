@@ -151,62 +151,61 @@ export default function AlarmsPage() {
                         </div>
                     ) : (
                         alarms.map(alarm => (
-                            <div key={alarm.id} className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-4 group hover:border-[var(--primary-dynamic)] transition-all">
-                                <div className="flex items-center justify-between gap-4">
-                                    <div className="text-5xl font-bold tabular-nums text-white min-w-[100px]">
+                            <div key={alarm.id} className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-4 flex items-center justify-between group hover:border-[var(--primary-dynamic)] transition-all">
+                                <div className="flex items-center gap-4">
+                                    <div className="text-3xl font-bold tabular-nums text-white">
                                         {alarm.time}
                                     </div>
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex items-center gap-3 mb-2">
+                                    <div className="min-w-0">
+                                        <div className="flex items-center gap-2 mb-1">
                                             <img
                                                 src={alarm.station.favicon || '/favicon.ico'}
-                                                className="w-8 h-8 rounded-lg object-cover bg-white/10"
+                                                className="w-5 h-5 rounded-full object-cover"
                                                 alt=""
                                             />
-                                            <span className="font-bold text-lg truncate">{alarm.station.name}</span>
+                                            <span className="font-semibold truncate max-w-[120px] text-sm">{alarm.station.name}</span>
                                         </div>
-                                        <div className="flex gap-2 items-center flex-wrap">
+                                        <div className="flex gap-1 items-center">
                                             {DAYS.map((day, i) => (
                                                 <span
                                                     key={day}
-                                                    className={`text-xs font-bold px-2 py-1 rounded-lg ${alarm.days.includes(i) ? 'bg-[var(--primary-dynamic)]/20 text-[var(--primary-dynamic)]' : 'text-[var(--text-muted)] opacity-30'}`}
+                                                    className={`text-[9px] uppercase font-bold ${alarm.days.includes(i) ? 'text-[var(--primary-dynamic)]' : 'text-[var(--text-muted)] opacity-30'}`}
                                                 >
                                                     {day[0]}
                                                 </span>
                                             ))}
                                             {alarm.smart && (
-                                                <span className="ml-2 px-2 py-1 rounded-lg bg-purple-500/20 text-purple-400 text-xs font-bold uppercase">IA</span>
+                                                <span className="ml-1 px-1 py-0.5 rounded bg-purple-500/20 text-purple-400 text-[8px] font-bold">IA</span>
                                             )}
                                         </div>
                                     </div>
                                 </div>
-                                <div className="flex items-center justify-between mt-4 pt-3 border-t border-white/5">
+                                <div className="flex items-center gap-1">
+                                    <button
+                                        onClick={() => startEditing(alarm)}
+                                        className="p-2 text-[var(--text-muted)] hover:text-blue-400 hover:bg-blue-500/10 rounded-lg touch-manipulation"
+                                        title="Editar"
+                                    >
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                        </svg>
+                                    </button>
                                     <button
                                         onClick={() => toggleAlarm(alarm.id)}
-                                        className={`flex-1 py-3 rounded-xl font-bold text-sm transition-colors touch-manipulation ${alarm.enabled ? 'bg-green-500 text-white' : 'bg-gray-700 text-gray-400'}`}
+                                        className={`relative w-10 h-6 rounded-full transition-colors duration-300 touch-manipulation ${alarm.enabled ? 'bg-green-500' : 'bg-gray-600'}`}
+                                        title={alarm.enabled ? 'Desactivar' : 'Activar'}
                                     >
-                                        {alarm.enabled ? '✓ ACTIVADA' : '○ ACTIVAR'}
+                                        <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform duration-300 ${alarm.enabled ? 'translate-x-4' : 'translate-x-0'}`} />
                                     </button>
-                                    <div className="flex gap-2 ml-3">
-                                        <button
-                                            onClick={() => startEditing(alarm)}
-                                            className="p-3 bg-blue-500/20 text-blue-400 rounded-xl touch-manipulation"
-                                            title="Editar"
-                                        >
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                            </svg>
-                                        </button>
-                                        <button
-                                            onClick={() => removeAlarm(alarm.id)}
-                                            className="p-3 bg-red-500/20 text-red-400 rounded-xl touch-manipulation"
-                                            title="Eliminar"
-                                        >
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                            </svg>
-                                        </button>
-                                    </div>
+                                    <button
+                                        onClick={() => removeAlarm(alarm.id)}
+                                        className="p-2 text-red-500/50 hover:text-red-500 hover:bg-red-500/10 rounded-lg touch-manipulation"
+                                        title="Eliminar"
+                                    >
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </button>
                                 </div>
                             </div>
                         ))
