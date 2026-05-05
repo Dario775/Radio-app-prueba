@@ -208,6 +208,7 @@ export default function AlarmsPage() {
                                         </button>
                                     </div>
                                 </div>
+                            </div>
                         ))
                     )}
                 </div>
