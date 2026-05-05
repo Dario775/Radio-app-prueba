@@ -152,15 +152,15 @@ export default function AlarmsPage() {
                     ) : (
                         alarms.map(alarm => (
                             <div key={alarm.id} className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-5 flex items-center justify-between group hover:border-[var(--primary-dynamic)] transition-all">
-                                <div className="flex items-center gap-6">
-                                    <div className="text-4xl font-bold tabular-nums">
+                                <div className="flex items-center gap-5">
+                                    <div className="text-4xl font-bold tabular-nums text-white">
                                         {alarm.time}
                                     </div>
                                     <div className="min-w-0">
-                                        <div className="flex items-center gap-2 mb-1">
+                                        <div className="flex items-center gap-3 mb-2">
                                             <img
                                                 src={alarm.station.favicon || '/favicon.ico'}
-                                                className="w-4 h-4 rounded-full object-cover"
+                                                className="w-6 h-6 rounded-lg object-cover"
                                                 alt=""
                                             />
                                             <span className="font-semibold truncate max-w-[150px]">{alarm.station.name}</span>
@@ -185,26 +185,29 @@ export default function AlarmsPage() {
                                         </div>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-2">
                                     <button
                                         onClick={() => startEditing(alarm)}
-                                        className="p-2 text-[var(--text-muted)] hover:text-[var(--primary-dynamic)] hover:bg-[var(--primary-dynamic)]/10 rounded-full transition-colors"
+                                        className="p-3 text-[var(--text-muted)] hover:text-[var(--primary-dynamic)] hover:bg-[var(--primary-dynamic)]/10 rounded-xl transition-colors touch-manipulation"
+                                        title="Editar"
                                     >
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                                         </svg>
                                     </button>
                                     <button
                                         onClick={() => toggleAlarm(alarm.id)}
-                                        className={`relative w-12 h-6 rounded-full transition-colors duration-300 ${alarm.enabled ? 'bg-[var(--primary-dynamic)]' : 'bg-gray-700'}`}
+                                        className={`relative w-14 h-8 rounded-full transition-colors duration-300 touch-manipulation ${alarm.enabled ? 'bg-green-500' : 'bg-gray-600'}`}
+                                        title={alarm.enabled ? 'Desactivar' : 'Activar'}
                                     >
-                                        <div className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform duration-300 ${alarm.enabled ? 'translate-x-6' : 'translate-x-0'}`} />
+                                        <div className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full transition-transform duration-300 shadow ${alarm.enabled ? 'translate-x-6' : 'translate-x-0'}`} />
                                     </button>
                                     <button
                                         onClick={() => removeAlarm(alarm.id)}
-                                        className="p-2 text-red-500/50 hover:text-red-500 hover:bg-red-500/10 rounded-full transition-colors"
+                                        className="p-3 text-red-500 hover:bg-red-500/20 rounded-xl transition-colors touch-manipulation"
+                                        title="Eliminar"
                                     >
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                         </svg>
                                     </button>
