@@ -48,7 +48,7 @@ export default function AlarmsPage() {
         if (editingAlarm) {
             updateAlarm(editingAlarm.id, alarmData);
         } else {
-            addAlarm(time, selectedDays, selectedStation, smart, newsSource, false, 'bbc', alarmSound, reminderMessage.trim() || undefined);
+            addAlarm(time, selectedDays, selectedStation, smart, newsSource, alarmSound, reminderMessage.trim() || undefined);
         }
 
         setIsAdding(false);
