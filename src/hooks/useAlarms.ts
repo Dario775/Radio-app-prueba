@@ -22,7 +22,15 @@ export function useAlarms() {
         localStorage.setItem('radio_alarms', JSON.stringify(newAlarms));
     };
 
-    const addAlarm = (time: string, days: number[], station: RadioStation, smart: boolean = false, newsSource?: 'bbc' | 'clarin' | 'lanacion' | 'infobae') => {
+    const addAlarm = (
+        time: string, 
+        days: number[], 
+        station: RadioStation, 
+        smart: boolean = false, 
+        newsSource?: 'bbc' | 'clarin' | 'lanacion' | 'infobae',
+        alarmSound: boolean = true,
+        reminderMessage?: string
+    ) => {
         const newAlarm: RadioAlarm = {
             id: Math.random().toString(36).substr(2, 9),
             time,
@@ -30,7 +38,9 @@ export function useAlarms() {
             enabled: true,
             smart,
             newsSource: newsSource || 'bbc',
-            station
+            station,
+            alarmSound,
+            reminderMessage
         };
         saveAlarms([...alarms, newAlarm]);
     };

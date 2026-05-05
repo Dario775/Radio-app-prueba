@@ -4,6 +4,8 @@ import "./globals.css";
 import { AudioProvider } from "@/context/AudioContext";
 import MiniPlayer from "@/components/MiniPlayer";
 import ThemeColorManager from "@/components/ThemeColorManager";
+import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration";
+import AlarmSoundOverlay from "@/components/AlarmSoundOverlay";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -48,10 +50,11 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen`}
       >
+        <ServiceWorkerRegistration />
         <AudioProvider>
           <ThemeColorManager />
           {children}
-          <MiniPlayer />
+          <AlarmSoundOverlay />
         </AudioProvider>
       </body>
     </html>

@@ -10,6 +10,7 @@ import GenreSelector from '@/components/GenreSelector';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import Navbar from '@/components/Navbar';
 import PlayerView from '../components/PlayerView';
+import MiniPlayer from '@/components/MiniPlayer';
 import { useAudio } from '@/context/AudioContext';
 import { useFavorites } from '@/hooks/useFavorites';
 import type { RadioStation } from '@/types/radio';
@@ -72,7 +73,12 @@ export function DiscoverView({
   const [selectedState, setSelectedState] = useState('');
 
   useEffect(() => {
-    getAllCountries().then(setCountries);
+    getAllCountries().then((data) => {
+      const uniqueCountries = data.filter((c, index, self) => 
+        index === self.findIndex((t) => t.name === c.name)
+      );
+      setCountries(uniqueCountries);
+    });
     getStatesForCountry('Argentina').then(setStates);
   }, []);
 
@@ -127,7 +133,7 @@ export function DiscoverView({
       </header>
 
       {/* Hero Section with Genre Selector */}
-      <div className="relative pt-6 overflow-hidden">
+      <div className="relative pt-6">
         <div className="max-w-4xl mx-auto px-4 mb-4">
           <div className="flex items-center justify-between mb-2">
             <div>
@@ -166,8 +172,8 @@ export function DiscoverView({
                   className="w-full appearance-none bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[var(--primary)] transition-colors"
                 >
                   <option value="" className="bg-black">Seleccionar País</option>
-                  {countries.map(c => (
-                    <option key={c.name} value={c.name} className="bg-black text-white">{c.name} ({c.stationcount})</option>
+                  {countries.map((c, index) => (
+                    <option key={`${c.name}-${index}`} value={c.name} className="bg-black text-white">{c.name} ({c.stationcount})</option>
                   ))}
                 </select>
                 <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-white/50">
@@ -184,8 +190,8 @@ export function DiscoverView({
                   className="w-full appearance-none bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[var(--primary)] transition-colors disabled:opacity-50"
                 >
                   <option value="" className="bg-black">Todas las Provincias/Estados</option>
-                  {states.map(s => (
-                    <option key={s.name} value={s.name} className="bg-black text-white">{s.name} ({s.stationcount})</option>
+                  {states.map((s, index) => (
+                    <option key={`${s.name}-${index}`} value={s.name} className="bg-black text-white">{s.name} ({s.stationcount})</option>
                   ))}
                 </select>
                 <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-white/50">
@@ -361,15 +367,38 @@ export default function Home() {
   useEffect(() => {
     const detectLocation = async () => {
       try {
-        const response = await fetch('https://ipapi.co/json/');
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+        
+        const response = await fetch('https://ipapi.co/json/', { 
+          signal: controller.signal 
+        });
+        clearTimeout(timeoutId);
+        
+        if (!response.ok) {
+          console.log('Location API unavailable, using default');
+          const local = await getStationsByLocation('AR');
+          setUserCountry({ name: 'Argentina', code: 'AR' });
+          setLocalStations(local);
+          return;
+        }
+        
         const data = await response.json();
         if (data.country_code) {
           setUserCountry({ name: data.country_name, code: data.country_code });
           const local = await getStationsByLocation(data.country_code);
           setLocalStations(local);
         }
-      } catch (err) {
-        console.error('Location detection failed:', err);
+      } catch (err: any) {
+        console.log('Location detection skipped:', err?.message || 'Network error');
+        // Use default location (Argentina)
+        try {
+          const local = await getStationsByLocation('AR');
+          setUserCountry({ name: 'Argentina', code: 'AR' });
+          setLocalStations(local);
+        } catch (e) {
+          console.log('Could not load local stations');
+        }
       }
     };
     detectLocation();
@@ -404,9 +433,9 @@ export default function Home() {
     setSearchQuery('');
   };
 
-  const { currentStation, playStation } = useAudio();
+  const { currentStation, playStation, isAlarmSoundPlaying } = useAudio();
   const { getTopStations, addToRecent } = useFavorites();
-  const [view, setView] = useState<'player' | 'discover'>('player');
+  const [view, setView] = useState<'player' | 'discover'>('discover');
   const topStations = getTopStations();
 
   // Track play when currentStation changes
@@ -416,20 +445,9 @@ export default function Home() {
     }
   }, [currentStation?.stationuuid, addToRecent]);
 
-  // Switch view automatically when a station is selected via search/roulette
+  // Fetch related stations when currentStation changes (without changing view)
   useEffect(() => {
-    if (currentStation && view === 'discover') {
-      setView('player');
-    }
-  }, [currentStation]);
-
-  // If no station is playing, force discovery view
-  useEffect(() => {
-    if (!currentStation) {
-      setView('discover');
-      setRelatedStations([]);
-    } else {
-      // Fetch related stations when currentStation changes
+    if (currentStation) {
       const fetchRelated = async () => {
         try {
           const { relatedStations } = await getStationDetails(currentStation.stationuuid);
@@ -439,6 +457,8 @@ export default function Home() {
         }
       };
       fetchRelated();
+    } else {
+      setRelatedStations([]);
     }
   }, [currentStation]);
 
@@ -480,6 +500,11 @@ export default function Home() {
             playStation={playStation}
           />
         </div>
+      )}
+
+      {/* Mini Player - Show only in discover view when station is playing */}
+      {view === 'discover' && currentStation && !isAlarmSoundPlaying && (
+        <MiniPlayer />
       )}
 
       {/* Navigation Overlay */}

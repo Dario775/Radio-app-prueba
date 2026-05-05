@@ -22,6 +22,10 @@ interface AudioContextType {
     stopRecording: () => void;
     sleepTimer: number | null;
     setSleepTimer: (minutes: number | null) => void;
+    isAlarmActive: boolean;
+    isAlarmSoundPlaying: boolean;
+    stopAlarmSound: () => void;
+    stopAlarm: () => void;
 }
 
 const AudioContext = createContext<AudioContextType | undefined>(undefined);
@@ -36,6 +40,9 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
     const [isRecording, setIsRecording] = useState(false);
     const [recordingDuration, setRecordingDuration] = useState(0);
     const [sleepTimer, setSleepTimer] = useState<number | null>(null);
+    const [isAlarmActive, setIsAlarmActive] = useState(false);
+    const [isAlarmSoundPlaying, setIsAlarmSoundPlaying] = useState(false);
+    const continueAfterAlarmSoundRef = useRef<(() => void) | null>(null);
     const audioRef = useRef<HTMLAudioElement>(null);
     const audioCtxRef = useRef<AudioContext | null>(null);
     const sourceRef = useRef<MediaElementAudioSourceNode | null>(null);
@@ -43,6 +50,8 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
     const chunksRef = useRef<Blob[]>([]);
     const timerRef = useRef<NodeJS.Timeout | null>(null);
+    const wakeLockRef = useRef<WakeLockSentinel | null>(null);
+    const setAlarmActiveRef = useRef<typeof setIsAlarmActive>(() => {});
 
     const togglePlay = useCallback(() => {
         if (!audioRef.current || !currentStation) return;
@@ -360,15 +369,67 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
         }
     }, [sleepTimer, isPlaying, togglePlay]);
 
-    // Smart Alarm Logic: Fetch Weather and Speak
-    const runSmartAlarm = async (station: RadioStation, newsSource: string = 'bbc') => {
+    const stopAlarmSound = useCallback(() => {
+        // Solo detiene el tono pero continúa con la secuencia
+        setIsAlarmSoundPlaying(false);
+        
+        if ((window as any).alarmAudioObj) {
+            (window as any).alarmAudioObj.pause();
+            (window as any).alarmAudioObj.currentTime = 0;
+            (window as any).alarmAudioObj = null;
+        }
+        
+        // Continuar con la secuencia (locución + radio)
+        if (continueAfterAlarmSoundRef.current) {
+            const continueFn = continueAfterAlarmSoundRef.current;
+            continueAfterAlarmSoundRef.current = null;
+            // Pequeño delay antes de continuar
+            setTimeout(() => continueFn(), 500);
+        }
+        
+        console.log('Tono detenido, continuando...');
+    }, []);
+
+    const stopAlarm = useCallback(() => {
+        setIsAlarmActive(false);
+        localStorage.removeItem('alarmActive');
+        
+        // Release wake lock
+        if (wakeLockRef.current) {
+            wakeLockRef.current.release().catch(() => {});
+            wakeLockRef.current = null;
+        }
+        
+        // Stop alarm sound
+        if ((window as any).alarmAudio) {
+            (window as any).alarmAudio.pause();
+            (window as any).alarmAudio.currentTime = 0;
+            (window as any).alarmAudio = null;
+        }
+        
+        // Stop speech synthesis
+        if (window.speechSynthesis) {
+            window.speechSynthesis.cancel();
+        }
+        
+        // Stop vibration
+        if ('vibrate' in navigator) {
+            navigator.vibrate(0);
+        }
+        
+        console.log('Alarm stopped');
+    }, []);
+
+    // Smart Alarm Logic - usando ref para evitar dependencia circular
+    const playStationRef = useRef(playStation);
+    playStationRef.current = playStation;
+
+    const runSmartAlarm = useCallback(async (station: RadioStation, newsSource: string = 'bbc') => {
         try {
-            // 1. Get location and weather (Free API, open-meteo)
             const weatherRes = await fetch('https://api.open-meteo.com/v1/forecast?latitude=-34.6037&longitude=-58.3816&current_weather=true');
             const weatherData = await weatherRes.json();
             const temp = Math.round(weatherData.current_weather.temperature);
 
-            // 2. Get News Headlines Dynamic
             let newsText = "";
             let feedUrl = "";
 
@@ -377,17 +438,16 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
                     feedUrl = 'https://www.clarin.com/rss/lo-ultimo/';
                     break;
                 case 'lanacion':
-                    feedUrl = 'https://www.lanacion.com.ar/arc/outboundfeeds/rss/?outputType=xml&type=137'; // General
+                    feedUrl = 'https://www.lanacion.com.ar/arc/outboundfeeds/rss/?outputType=xml&type=137';
                     break;
                 case 'infobae':
                     feedUrl = 'https://www.infobae.com/feeds/rss/';
                     break;
-                default: // bbc
+                default:
                     feedUrl = 'https://feeds.bbci.co.uk/mundo/rss.xml';
             }
 
             try {
-                // Use rss2json to bridge standard RSS to JSON (free tier limits apply, but sufficient for personal use)
                 const newsRes = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feedUrl)}`);
                 const newsData = await newsRes.json();
                 if (newsData.status === 'ok' && newsData.items) {
@@ -399,7 +459,6 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
                 console.warn('News fetch failed', e);
             }
 
-            // 3. Construct Speech
             const msgs = [
                 `Buenos días. Son las ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}.`,
                 `La temperatura actual es de ${temp} grados.`,
@@ -418,22 +477,100 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
             window.speechSynthesis.speak(utterance);
 
             utterance.onend = () => {
-                playStation(station);
+                playStationRef.current(station);
             };
 
             setTimeout(() => {
-                if (!isPlaying && window.speechSynthesis.speaking) {
-                    // let it finish
-                } else if (!isPlaying) {
-                    playStation(station);
+                if (!window.speechSynthesis.speaking) {
+                    playStationRef.current(station);
                 }
             }, 15000);
 
         } catch (err) {
             console.error('Smart alarm failed:', err);
-            playStation(station);
+            playStationRef.current(station);
         }
-    };
+    }, []);
+
+    const runSmartAlarmWithOptions = useCallback(async (
+        station: RadioStation, 
+        newsSource: string = 'bbc',
+        reminderMessage?: string
+    ) => {
+        try {
+            // Get weather
+            const weatherRes = await fetch('https://api.open-meteo.com/v1/forecast?latitude=-34.6037&longitude=-58.3816&current_weather=true');
+            const weatherData = await weatherRes.json();
+            const temp = Math.round(weatherData.current_weather.temperature);
+
+            // Get news
+            let newsText = "";
+            let feedUrl = "";
+            switch (newsSource) {
+                case 'clarin': feedUrl = 'https://www.clarin.com/rss/lo-ultimo/'; break;
+                case 'lanacion': feedUrl = 'https://www.lanacion.com.ar/arc/outboundfeeds/rss/?outputType=xml&type=137'; break;
+                case 'infobae': feedUrl = 'https://www.infobae.com/feeds/rss/'; break;
+                default: feedUrl = 'https://feeds.bbci.co.uk/mundo/rss.xml';
+            }
+
+            try {
+                const newsRes = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feedUrl)}`);
+                const newsData = await newsRes.json();
+                if (newsData.status === 'ok' && newsData.items) {
+                    const headlines = newsData.items.slice(0, 3).map((item: any) => item.title).join('. ');
+                    const sourceName = newsSource === 'bbc' ? 'BBC Mundo' : newsSource === 'lanacion' ? 'La Nación' : newsSource.charAt(0).toUpperCase() + newsSource.slice(1);
+                    newsText = `Aquí tienes los titulares de ${sourceName}: ${headlines}.`;
+                }
+            } catch (e) { console.warn('News fetch failed', e); }
+
+            // Build messages
+            const msgs: string[] = [
+                `Buenos días. Son las ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}.`,
+            ];
+
+            // Add reminder if exists
+            if (reminderMessage) {
+                msgs.push(`Tu recordatorio: ${reminderMessage}`);
+            }
+
+            msgs.push(
+                `La temperatura actual es de ${temp} grados.`,
+                newsText,
+                `Iniciando tu emisora: ${station.name}.`,
+                `Que tengas un excelente día.`
+            );
+
+            const fullText = msgs.filter(Boolean).join(' ');
+
+            const utterance = new SpeechSynthesisUtterance(fullText);
+            utterance.lang = 'es-ES';
+            utterance.rate = 0.95;
+
+            window.speechSynthesis.cancel();
+            window.speechSynthesis.speak(utterance);
+
+            utterance.onend = () => {
+                playStationRef.current(station);
+            };
+
+            setTimeout(() => {
+                if (!window.speechSynthesis.speaking) {
+                    playStationRef.current(station);
+                }
+            }, 20000);
+
+        } catch (err) {
+            console.error('Smart alarm with options failed:', err);
+            playStationRef.current(station);
+        }
+    }, []);
+
+    // Request notification permission on mount
+    useEffect(() => {
+        if ('Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission();
+        }
+    }, []);
 
     // Alarm checking logic
     useEffect(() => {
@@ -446,45 +583,102 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
             if (!stored) return;
 
             const alarms: Array<RadioAlarm> = JSON.parse(stored);
+            console.log('Checking alarms:', alarms, 'Current time:', currentTime, 'Day:', currentDay);
+            
             const activeAlarm = alarms.find(a =>
                 a.enabled &&
                 a.time === currentTime &&
                 a.days.includes(currentDay)
             );
 
-            if (activeAlarm) {
-                // Simplified trigger logic for reliability
-                // We use a simple in-memory tracker for the current session to avoid loops
-                // But we allow re-trigger if the page is refreshed
+if (activeAlarm) {
                 const triggerKey = `alarm_${activeAlarm.id}_${now.toDateString() + currentTime}`;
 
-                // Check if we already triggered this alarm for this specific time today
                 if (!window[triggerKey as any]) {
                     console.log('⏰ ALARM TRIGGERED!', activeAlarm);
                     (window as any)[triggerKey] = true;
 
-                    // Show notification
-                    if ('Notification' in window && Notification.permission === 'granted') {
-                        new Notification('Radio Alarm', {
-                            body: `Es hora de: ${activeAlarm.station.name}`,
-                            icon: activeAlarm.station.favicon || '/favicon.ico',
-                            requireInteraction: true
-                        });
+                    setIsAlarmActive(true);
+                    localStorage.setItem('alarmActive', 'true');
+
+                    // Keep screen awake with Wake Lock
+                    const requestWakeLock = async () => {
+                        try {
+                            if ('wakeLock' in navigator) {
+                                wakeLockRef.current = await navigator.wakeLock.request('screen');
+                            }
+                        } catch (err) {
+                            console.log('Wake Lock failed:', err);
+                        }
+                    };
+                    requestWakeLock();
+
+                    // Vibrate pattern
+                    if ('vibrate' in navigator) {
+                        navigator.vibrate([200, 100, 200, 100, 200, 100, 500, 200, 500]);
                     }
 
-                    // Force play immediately
-                    if (activeAlarm.smart) {
-                        runSmartAlarm(activeAlarm.station, activeAlarm.newsSource);
+                    // Show notification
+                    if ('Notification' in window && Notification.permission === 'granted') {
+                        const notification = new Notification('⏰ ¡ALARMA!', {
+                            body: activeAlarm.reminderMessage || `Reproduciendo: ${activeAlarm.station.name}`,
+                            icon: activeAlarm.station.favicon || '/icon-512.png',
+                            requireInteraction: true,
+                            tag: 'alarm-notification'
+                        });
+
+                        notification.onclick = () => {
+                            window.focus();
+                            notification.close();
+                        };
+                    }
+
+                    // Función para continuar con la secuencia (locución + radio)
+                    const continueAlarmSequence = () => {
+                        if (activeAlarm.smart) {
+                            runSmartAlarmWithOptions(
+                                activeAlarm.station, 
+                                activeAlarm.newsSource, 
+                                activeAlarm.reminderMessage
+                            );
+                        } else {
+                            // Solo reproducir radio
+                            playStation(activeAlarm.station);
+                        }
+                    };
+
+                    // Guardar la función para continuar
+                    continueAfterAlarmSoundRef.current = continueAlarmSequence;
+
+                    // Reproducir tono si está habilitado
+                    const playAlarmSound = () => {
+                        if (activeAlarm.alarmSound !== false) {
+                            setIsAlarmSoundPlaying(true);
+                            const audio = new Audio('/ringtone-nokia.mp3');
+                            audio.loop = true;
+                            audio.volume = 1;
+                            audio.play().catch(e => console.log('Alarm sound failed:', e));
+                            
+                            // Guardar referencia para poder detenerlo
+                            (window as any).alarmAudio = audio;
+                            (window as any).alarmAudioObj = audio;
+                        }
+                    };
+
+                    // Iniciar con tono o directo
+                    if (activeAlarm.alarmSound !== false) {
+                        playAlarmSound();
                     } else {
-                        playStation(activeAlarm.station);
+                        // Sin tono, directo a la secuencia
+                        continueAlarmSequence();
                     }
                 }
             }
         };
 
-        const interval = setInterval(checkAlarms, 5000); // Check every 5s for better precision
+        const interval = setInterval(checkAlarms, 5000);
         return () => clearInterval(interval);
-    }, [playStation]);
+    }, [runSmartAlarm]);
 
     return (
         <AudioContext.Provider value={{
@@ -505,7 +699,11 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
             startRecording,
             stopRecording,
             sleepTimer,
-            setSleepTimer
+            setSleepTimer,
+            isAlarmActive,
+            isAlarmSoundPlaying,
+            stopAlarmSound,
+            stopAlarm
         }}>
             {children}
             {/* The actual hidden audio element */}

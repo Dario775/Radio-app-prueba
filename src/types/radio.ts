@@ -50,4 +50,6 @@ export interface RadioAlarm {
     smart?: boolean;
     newsSource?: 'bbc' | 'clarin' | 'lanacion' | 'infobae';
     station: RadioStation;
+    alarmSound?: boolean; // Sonido de alarma
+    reminderMessage?: string; // Mensaje de recordatorio
 }

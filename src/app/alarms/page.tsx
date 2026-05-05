@@ -20,6 +20,8 @@ export default function AlarmsPage() {
     const [selectedStation, setSelectedStation] = useState<RadioStation | null>(null);
     const [smart, setSmart] = useState(false);
     const [newsSource, setNewsSource] = useState<'bbc' | 'clarin' | 'lanacion' | 'infobae'>('bbc');
+    const [alarmSound, setAlarmSound] = useState(true);
+    const [reminderMessage, setReminderMessage] = useState('');
 
     React.useEffect(() => {
         if ('Notification' in window && Notification.permission === 'default') {
@@ -33,22 +35,26 @@ export default function AlarmsPage() {
         e.preventDefault();
         if (!selectedStation) return;
 
+        const alarmData = {
+            time,
+            days: selectedDays,
+            station: selectedStation,
+            smart,
+            newsSource,
+            alarmSound,
+            reminderMessage: reminderMessage.trim() || undefined
+        };
+
         if (editingAlarm) {
-            updateAlarm(editingAlarm.id, {
-                time,
-                days: selectedDays,
-                station: selectedStation,
-                smart,
-                newsSource
-            });
+            updateAlarm(editingAlarm.id, alarmData);
         } else {
-            addAlarm(time, selectedDays, selectedStation, smart, newsSource);
+            addAlarm(time, selectedDays, selectedStation, smart, newsSource, false, 'bbc', alarmSound, reminderMessage.trim() || undefined);
         }
 
         setIsAdding(false);
         setEditingAlarm(null);
-        // Reset
         setSelectedStation(null);
+        setReminderMessage('');
     };
 
     const startEditing = (alarm: any) => {
@@ -58,6 +64,8 @@ export default function AlarmsPage() {
         setSelectedStation(alarm.station);
         setSmart(!!alarm.smart);
         setNewsSource(alarm.newsSource || 'bbc');
+        setAlarmSound(alarm.alarmSound !== false);
+        setReminderMessage(alarm.reminderMessage || '');
         setIsAdding(true);
     };
 
@@ -67,6 +75,8 @@ export default function AlarmsPage() {
         setSelectedDays([1, 2, 3, 4, 5]);
         setSelectedStation(allStations[0] || null);
         setSmart(false);
+        setAlarmSound(true);
+        setReminderMessage('');
         setNewsSource('bbc');
         setIsAdding(true);
     };
@@ -134,7 +144,7 @@ export default function AlarmsPage() {
                                             />
                                             <span className="font-semibold truncate max-w-[150px]">{alarm.station.name}</span>
                                         </div>
-                                        <div className="flex gap-1 items-center">
+                                        <div className="flex gap-1 items-center flex-wrap">
                                             {DAYS.map((day, i) => (
                                                 <span
                                                     key={day}
@@ -145,6 +155,11 @@ export default function AlarmsPage() {
                                             ))}
                                             {alarm.smart && (
                                                 <span className="ml-2 px-1.5 py-0.5 rounded-md bg-purple-500/20 text-purple-400 text-[8px] font-black uppercase tracking-widest border border-purple-500/30">IA</span>
+                                            )}
+                                            {alarm.smart && alarm.newsSource && (
+                                                <span className="ml-1 text-[8px] text-purple-400/60 uppercase">
+                                                    {alarm.newsSource === 'bbc' ? 'BBC' : alarm.newsSource === 'clarin' ? 'Clarin' : alarm.newsSource === 'lanacion' ? 'LN' : 'IB'}
+                                                </span>
                                             )}
                                         </div>
                                     </div>
@@ -181,9 +196,10 @@ export default function AlarmsPage() {
 
             {/* Add Alarm Modal */}
             {isAdding && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 sm:p-0">
+                <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-2 sm:p-4">
                     <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setIsAdding(false)} />
-                    <div className="relative bg-[var(--surface)] w-full max-w-md rounded-3xl p-8 border border-white/10 shadow-2xl animate-fade-in">
+                    <div className="relative bg-[var(--surface)] w-full max-w-md max-h-[90vh] rounded-3xl border border-white/10 shadow-2xl animate-fade-in overflow-hidden flex flex-col">
+                        <div className="p-6 overflow-y-auto flex-1">
                         <h2 className="text-2xl font-bold mb-6">{editingAlarm ? 'Editar Alarma' : 'Nueva Alarma'}</h2>
                         <form onSubmit={handleAdd} className="space-y-6">
                             <div>
@@ -278,6 +294,41 @@ export default function AlarmsPage() {
                                 </div>
                             )}
 
+                            {/* Sonido de Alarma */}
+                            <div className="flex items-center justify-between p-4 bg-orange-500/5 rounded-2xl border border-orange-500/20">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-orange-500/20 rounded-lg">
+                                        <svg className="w-5 h-5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-bold text-white">Pitido de Alarma</p>
+                                        <p className="text-[10px] text-orange-400/70">Sonido antes de reproducir</p>
+                                    </div>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => setAlarmSound(!alarmSound)}
+                                    className={`relative w-10 h-5 rounded-full transition-colors duration-300 ${alarmSound ? 'bg-orange-500' : 'bg-gray-700'}`}
+                                >
+                                    <div className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform duration-300 ${alarmSound ? 'translate-x-5' : 'translate-x-0'}`} />
+                                </button>
+                            </div>
+
+                            {/* Recordatorio Personalizado */}
+                            <div className="space-y-2">
+                                <label className="block text-xs text-[var(--text-muted)] uppercase font-bold tracking-wider">Mensaje de Recordatorio</label>
+                                <input
+                                    type="text"
+                                    value={reminderMessage}
+                                    onChange={(e) => setReminderMessage(e.target.value)}
+                                    placeholder="Ej: No olvides la reunión a las 9"
+                                    className="w-full bg-black/20 border border-white/10 rounded-xl p-3 text-sm focus:outline-none focus:border-[var(--primary-dynamic)] transition-colors placeholder:text-gray-600"
+                                />
+                                <p className="text-[10px] text-gray-500">El asistente de voz leerá este mensaje antes de la radio</p>
+                            </div>
+
                             <div className="flex gap-4 pt-4">
                                 <button
                                     type="button"
@@ -295,9 +346,52 @@ export default function AlarmsPage() {
                                 </button>
                             </div>
                         </form>
+                        </div>
                     </div>
                 </div>
-            )}
+)}
+
+            <nav className="fixed bottom-0 left-0 right-0 z-50 glass-dark border-t border-white/10 safe-area-pb">
+                <div className="max-w-lg mx-auto px-4">
+                    <div className="flex items-center justify-around py-2">
+                        <Link href="/" className="flex-1 flex flex-col items-center gap-1 py-2 rounded-xl transition-all text-[var(--text-muted)] hover:text-[var(--foreground)]">
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+                            </svg>
+                            <span className="text-[10px] font-medium">Reproductor</span>
+                        </Link>
+
+                        <Link href="/" className="flex-1 flex flex-col items-center gap-1 py-2 rounded-xl transition-all text-[var(--text-muted)] hover:text-[var(--foreground)]">
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                            <span className="text-[10px] font-medium">Explorar</span>
+                        </Link>
+
+                        <Link href="/favorites" className="flex-1 flex flex-col items-center gap-1 py-2 rounded-xl transition-all text-[var(--text-muted)] hover:text-[var(--foreground)]">
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                            </svg>
+                            <span className="text-[10px] font-medium">Librería</span>
+                        </Link>
+
+                        <Link href="/alarms" className="flex-1 flex flex-col items-center gap-1 py-2 rounded-xl transition-all text-[var(--primary)] bg-[var(--primary)]/10">
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                            </svg>
+                            <span className="text-[10px] font-medium">Alarmas</span>
+                        </Link>
+
+                        <Link href="/audio-preferences" className="flex-1 flex flex-col items-center gap-1 py-2 rounded-xl transition-all text-[var(--text-muted)] hover:text-[var(--foreground)]">
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            <span className="text-[10px] font-medium">Ajustes</span>
+                        </Link>
+                    </div>
+                </div>
+            </nav>
         </div>
     );
 }

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
+import { useAudio } from '@/context/AudioContext';
 import type { AudioPreferences } from '@/types/radio';
 
 const qualityOptions = [
@@ -26,6 +27,7 @@ const sleepTimerOptions = [
 ];
 
 export default function AudioPreferences() {
+  const { setSleepTimer } = useAudio();
   const [preferences, setPreferences] = useState<AudioPreferences>({
     quality: 'auto',
     bufferSize: 'medium',
@@ -38,9 +40,13 @@ export default function AudioPreferences() {
   useEffect(() => {
     const stored = localStorage.getItem('audioPreferences');
     if (stored) {
-      setPreferences(JSON.parse(stored));
+      const parsed = JSON.parse(stored);
+      setPreferences(parsed);
+      if (parsed.sleepTimer) {
+        setSleepTimer(parsed.sleepTimer);
+      }
     }
-  }, []);
+  }, [setSleepTimer]);
 
   // Save preferences to localStorage
   const savePreferences = () => {
@@ -54,6 +60,10 @@ export default function AudioPreferences() {
     value: AudioPreferences[K]
   ) => {
     setPreferences((prev) => ({ ...prev, [key]: value }));
+    
+    if (key === 'sleepTimer') {
+      setSleepTimer(value as number | null);
+    }
   };
 
   return (

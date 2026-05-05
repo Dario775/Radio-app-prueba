@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useCallback } from 'react';
 import { useAudio } from '@/context/AudioContext';
 
 interface Genre {
@@ -29,21 +29,54 @@ interface GenreSelectorProps {
 
 export default function GenreSelector({ activeGenre, onGenreChange }: GenreSelectorProps) {
     const scrollRef = useRef<HTMLDivElement>(null);
+    const isDragging = useRef(false);
+    const startX = useRef(0);
+    const scrollLeft = useRef(0);
     const { dominantColor } = useAudio();
 
-    // Scroll active item into view
-    useEffect(() => {
-        const activeItem = scrollRef.current?.querySelector(`[data-id="${activeGenre}"]`);
-        if (activeItem) {
-            activeItem.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    const handleMouseDown = useCallback((e: React.MouseEvent) => {
+        isDragging.current = true;
+        startX.current = e.pageX - (scrollRef.current?.offsetLeft || 0);
+        scrollLeft.current = scrollRef.current?.scrollLeft || 0;
+        if (scrollRef.current) {
+            scrollRef.current.style.cursor = 'grabbing';
+            scrollRef.current.style.userSelect = 'none';
         }
-    }, [activeGenre]);
+    }, []);
+
+    const handleMouseLeave = useCallback(() => {
+        isDragging.current = false;
+        if (scrollRef.current) {
+            scrollRef.current.style.cursor = 'grab';
+            scrollRef.current.style.userSelect = '';
+        }
+    }, []);
+
+    const handleMouseUp = useCallback(() => {
+        isDragging.current = false;
+        if (scrollRef.current) {
+            scrollRef.current.style.cursor = 'grab';
+            scrollRef.current.style.userSelect = '';
+        }
+    }, []);
+
+    const handleMouseMove = useCallback((e: React.MouseEvent) => {
+        if (!isDragging.current || !scrollRef.current) return;
+        e.preventDefault();
+        const x = e.pageX - scrollRef.current.offsetLeft;
+        const walk = (x - startX.current) * 2;
+        scrollRef.current.scrollLeft = scrollLeft.current - walk;
+    }, []);
 
     return (
-        <div className="relative w-full overflow-hidden">
+        <div className="max-w-4xl mx-auto px-4">
             <div
                 ref={scrollRef}
-                className="flex gap-2.5 overflow-x-auto px-6 py-2 no-scrollbar snap-x snap-mandatory"
+                className="flex gap-2.5 overflow-x-auto pb-4 no-scrollbar cursor-grab"
+                onMouseDown={handleMouseDown}
+                onMouseLeave={handleMouseLeave}
+                onMouseUp={handleMouseUp}
+                onMouseMove={handleMouseMove}
             >
                 {genres.map((genre) => {
                     const isActive = activeGenre === genre.id;
@@ -52,9 +85,8 @@ export default function GenreSelector({ activeGenre, onGenreChange }: GenreSelec
                     return (
                         <button
                             key={genre.id}
-                            data-id={genre.id}
                             onClick={() => onGenreChange(genre.id)}
-                            className="relative flex-shrink-0 snap-center"
+                            className="relative flex-shrink-0"
                         >
                             <div
                                 className={`flex items-center gap-3 px-4 py-2.5 rounded-2xl border transition-all duration-300 ${isActive
@@ -63,7 +95,7 @@ export default function GenreSelector({ activeGenre, onGenreChange }: GenreSelec
                                     }`}
                             >
                                 <svg
-                                    className="w-4 h-4 transition-colors"
+                                    className="w-4 h-4 transition-colors flex-shrink-0"
                                     viewBox="0 0 24 24"
                                     fill="currentColor"
                                     style={{ color: isActive ? themeColor : 'inherit' }}

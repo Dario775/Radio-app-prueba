@@ -1,23 +1,20 @@
 'use client';
 
 import { useAudio } from '@/context/AudioContext';
-import { usePathname, useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import CastButton from './CastButton';
 
-export default function MiniPlayer() {
-    const { currentStation, isPlaying, togglePlay, isLoading, dominantColor } = useAudio();
-    const pathname = usePathname();
+interface MiniPlayerProps {
+    forceShow?: boolean;
+}
+
+export default function MiniPlayer({ forceShow = false }: MiniPlayerProps) {
+    const { currentStation, isPlaying, togglePlay, isLoading, dominantColor, isAlarmActive, isAlarmSoundPlaying, stopAlarmSound, stopAlarm } = useAudio();
     const router = useRouter();
-    const [isVisible, setIsVisible] = useState(false);
 
-    useEffect(() => {
-        // Show only if a station is playing/loaded
-        // AND we are not on the full-screen player view
-        setIsVisible(pathname !== '/');
-    }, [pathname, currentStation]);
-
-    if (!currentStation || !isVisible) return null;
+    if (!currentStation && !isAlarmSoundPlaying) return null;
+    
+    if (!currentStation) return null;
 
     return (
         <div
@@ -49,6 +46,20 @@ export default function MiniPlayer() {
 
                 {/* Controls */}
                 <div onClick={(e) => e.stopPropagation()} className="flex items-center gap-2">
+                    {isAlarmActive && (
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                stopAlarm();
+                            }}
+                            className="w-10 h-10 rounded-full flex items-center justify-center transition-all bg-red-500 text-white shadow-lg active:scale-95 animate-pulse"
+                            title="Detener Alarma"
+                        >
+                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M6 6h12v12H6z" />
+                            </svg>
+                        </button>
+                    )}
                     <CastButton />
                     <button
                         onClick={(e) => {
