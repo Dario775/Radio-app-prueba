@@ -582,8 +582,15 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
             const stored = localStorage.getItem('radio_alarms');
             if (!stored) return;
 
-            const alarms: Array<RadioAlarm> = JSON.parse(stored);
-            console.log('Checking alarms:', alarms, 'Current time:', currentTime, 'Day:', currentDay);
+            let alarms: RadioAlarm[] = [];
+            try {
+                alarms = JSON.parse(stored);
+            } catch (e) {
+                console.error('Failed to parse alarms:', e);
+                return;
+            }
+
+            if (alarms.length === 0) return;
             
             const activeAlarm = alarms.find(a =>
                 a.enabled &&
